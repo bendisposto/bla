@@ -19,6 +19,11 @@
    (is (= (ev (cset (intgr 1) (intgr 2))) #{1,2}) "integer set construction")
    (is (ev (member (intgr 1) (cset (intgr 1) (intgr 2)))) "1 in {1,2}")
    (is (not (ev (member (intgr 4) (cset (intgr 1) (intgr 2))))) "4 not in {1,2}")
+   (is (= (ev (sunion (cset (intgr 1) (intgr 2))
+        (cset (intgr 3) (intgr 2)))) #{1,2,3}) "{1,2} U {2,3} = {1,2,3}")
+   (is (= (ev (sintersect (cset (intgr 1) (intgr 2))
+	        (cset (intgr 3) (intgr 2)))) #{2}) "{1,2} ^ {2,3} = {2}")
 )
+
 
 

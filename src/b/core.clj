@@ -1,8 +1,9 @@
-(ns b.core)
+(ns b.core
+	(:use [clojure.set]))
 
 (declare mk_set contains)
 
-(defn lift [op & p] (fn [e] (apply op ((apply juxt p)e))))
+(defn lift [op & p] (fn [e] (apply op ((apply juxt p) e))))
 
 (defn vrb [x] (fn [e] (e x)))
 (defn intgr [x] (fn [e] x))
@@ -14,6 +15,8 @@
 (defn sub [a b] (lift - a b))
 (defn mult [a b] (lift * a b))
 (defn div [a b] (lift / a b))
+(defn sunion [s1 s2] (lift union s1 s2))
+(defn sintersect [s1 s2] (lift intersection s1 s2))
 
 ;;;;;;;;;
 (defn ev [x] (x {}))
