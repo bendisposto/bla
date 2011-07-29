@@ -47,6 +47,13 @@
 			        (cset (intgr 3) (intgr 2)))) #{1}) "{1,2} - {2,3} = {1}")
 )
 
+(deftest junctors 
+	(isnt (ev (jand (grt (intgr 4) (intgr 3)) (less (intgr 4) (intgr 3)))))
+	(is (ev (jand (grt (intgr 4) (intgr 3)) (grt (intgr 4) (intgr 3)))))
+	(is (ev (jor (grt (intgr 4) (intgr 3)) (less (intgr 4) (intgr 3)))))
+	(isnt (ev (jor (less (intgr 4) (intgr 3)) (less (intgr 4) (intgr 3)))))
+)
+
 (deftest tuple-construction
 	(is (= (ev (ctuple (intgr 1) (intgr 2))) [1 2]) "integer tuple construction"))
 	

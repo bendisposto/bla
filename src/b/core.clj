@@ -1,10 +1,13 @@
 (ns b.core
 	(:use [clojure.set]))
 
-(declare mk_set mk_tuple contains)
+(declare mk_set mk_tuple contains l_and l_or l_not)
 
 ;((juxt f g) a) = [(f a) (g a)]
 (defn lift [op a b] (fn [e] (apply op ((juxt a b) e)))) 
+
+
+(defmacro binlift [name op] `(defn ~name [a# b#] (lift ~op a# b#)))
 
 ; Construction
 (defn vrb [x] (fn [e] (e x)))
@@ -27,6 +30,9 @@
 (defn applyfun [fun arg] identity)
 
 ; Predicates
+(defn jand [a b] (lift l_and a b))
+(binlift jor l_or)
+
 
 (defn grt [a b] (lift > a b))
 (defn grteq [a b] (lift >= a b))
@@ -42,6 +48,9 @@
 (defn mk_tuple [a b] [a b])
 (defn contains [S e] (not (nil? (S e))))
 
+(defn l_and [a b] (and a b))
+(defn l_or [a b] (or a b))
+(defn l_not [a] (not a))
 
 
 ; generic version of lift: can lift any number of args
