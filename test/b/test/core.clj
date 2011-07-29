@@ -32,7 +32,8 @@
 )
 
 (deftest set-construction
-   (is (= (ev (cset (intgr 1) (intgr 2))) #{1,2}) "integer set construction"))
+   (is (= (ev (cset (intgr 1) (intgr 2))) #{1,2}) "integer set construction")
+   (is (= (ev (cset (intgr 1) (intgr 2) (intgr 3))) #{1,3,2}) "integer set construction"))
 
 (deftest set-predicates
    (is (ev (member (intgr 1) (cset (intgr 1) (intgr 2)))) "1 in {1,2}")
