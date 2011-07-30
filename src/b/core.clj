@@ -1,7 +1,7 @@
 (ns b.core
 	(:use [clojure.set]))
 
-(declare mk_set mk_tuple mk_rel l_and l_or l_not contains$)
+(declare mk_set mk_tuple mk_rel  andf orf notf member)
 
 (defmacro lift [name op] `(defn ~name [a# b#] (lift$ ~op a# b#)))
 
@@ -28,23 +28,11 @@
 
 
 ;Expressions
-(autolift + - * > >= < <=)
-(lift div /)
-
-(lift sunion union)
-(lift sintersect intersection)
-(lift ssub difference)
+(autolift + - * > >= < <= union intersection difference = andf orf notf mod member)
+(lift __div /)
 
 (defn applyfun [fun arg] identity)
 
-; Predicates
-(lift jand l_and)
-(lift jor l_or)
-
-(lift member contains$)
-(lift eq =)
-
-(lift imod mod)
 
 ;;;;;;;;;
 (defn ev [x] (x {}))
@@ -56,10 +44,10 @@
 (defn mk_tuple [a b] [a b])
 (defn contains [S e] (not (nil? (S e))))
 
-(defn l_and [a b] (and a b))
-(defn l_or [a b] (or a b))
-(defn l_not [a] (not a))
-(defn contains$ [a b] (contains b a))
+(defn andf [a b] (and a b))
+(defn orf [a b] (or a b))
+(defn notf [a] (not a))
+(defn member [a b] (contains b a))
 
 ; generic version of lift: can lift any number of args
 ;

@@ -36,23 +36,23 @@
    (is (= (ev (cset (intgr 1) (intgr 2) (intgr 3))) #{1,3,2}) "integer set construction"))
 
 (deftest set-predicates
-   (is (ev (member (intgr 1) (cset (intgr 1) (intgr 2)))) "1 in {1,2}")
-   (is (not (ev (member (intgr 4) (cset (intgr 1) (intgr 2))))) "4 not in {1,2}"))
+   (is (ev (__member (intgr 1) (cset (intgr 1) (intgr 2)))) "1 in {1,2}")
+   (isnt (ev (__member (intgr 4) (cset (intgr 1) (intgr 2)))) "4 not in {1,2}"))
 
 (deftest set-expressions
-   (is (= (ev (sunion (cset (intgr 1) (intgr 2))
+   (is (= (ev (__union (cset (intgr 1) (intgr 2))
         (cset (intgr 3) (intgr 2)))) #{1,2,3}) "{1,2} U {2,3} = {1,2,3}")
-   (is (= (ev (sintersect (cset (intgr 1) (intgr 2))
+   (is (= (ev (__intersection (cset (intgr 1) (intgr 2))
 	        (cset (intgr 3) (intgr 2)))) #{2}) "{1,2} ^ {2,3} = {2}")
-   (is (= (ev (ssub (cset (intgr 1) (intgr 2))
+   (is (= (ev (__difference (cset (intgr 1) (intgr 2))
 			        (cset (intgr 3) (intgr 2)))) #{1}) "{1,2} - {2,3} = {1}")
 )
 
 (deftest junctors 
-	(isnt (ev (jand (__> (intgr 4) (intgr 3)) (__< (intgr 4) (intgr 3)))))
-	(is (ev (jand (__> (intgr 4) (intgr 3)) (__> (intgr 4) (intgr 3)))))
-	(is (ev (jor (__> (intgr 4) (intgr 3)) (__< (intgr 4) (intgr 3)))))
-	(isnt (ev (jor (__< (intgr 4) (intgr 3)) (__< (intgr 4) (intgr 3)))))
+	(isnt (ev (__andf (__> (intgr 4) (intgr 3)) (__< (intgr 4) (intgr 3)))))
+	(is (ev (__andf (__> (intgr 4) (intgr 3)) (__> (intgr 4) (intgr 3)))))
+	(is (ev (__orf (__> (intgr 4) (intgr 3)) (__< (intgr 4) (intgr 3)))))
+	(isnt (ev (__orf (__< (intgr 4) (intgr 3)) (__< (intgr 4) (intgr 3)))))
 )
 
 (deftest tuple-construction
