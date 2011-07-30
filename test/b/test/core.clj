@@ -63,11 +63,10 @@
 	{1 1, 2 2})
 	"Identity relation on domain 1..2")
 	
-	;(is (= (ev (applyfun (__set (__tuple (intgr 1) (intgr 1)) (__tuple (intgr 2) (intgr 2))) 1))
-	;1)
-	;"apply id function on 1 = 1")
-	
-	)	
+	(is (= (ev (__applyfun (__set (__tuple (intgr 1) (intgr 1)) (__tuple (intgr 2) (intgr 2))) (intgr 1)))
+	1)
+	"apply id function on 1 = 1")
+)	
 
 
 

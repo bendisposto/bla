@@ -1,7 +1,7 @@
 (ns b.core
 	(:use [clojure.set]))
 
-(declare mk_set tuple mk_rel  andf orf notf member)
+(declare mk_set tuple mk_rel  andf orf notf member div applyfun)
 
 (defmacro lift [name op] `(defn ~name [a# b#] (lift$ ~op a# b#)))
 
@@ -11,7 +11,6 @@
 
 (defn lift$ [op & p] (fn [e] (apply op ((apply juxt p) e)))) ;((juxt f g) a) = [(f a) (g a)]
 
-; Construction
 (defn vrb [x] (fn [e] (e x)))
 (defn intgr [x] (fn [e] x))
 (defn bool [x] (fn [e] x))
@@ -21,11 +20,7 @@
 	(= '__tuple (first (first elements))) `(lift$ mk_rel ~@elements)
 	:else `(lift$ mk_set ~@elements)))	
 
-(autolift + - * > >= < <= union intersection difference = andf orf notf mod member tuple)
-(lift __div /)
-
-
-(defn applyfun [fun arg] identity)
+(autolift + - * > >= < <= union intersection difference = andf orf notf mod member tuple div applyfun)
 
 ;;;;;;;;;
 (defn ev [x] (x {}))
@@ -39,4 +34,6 @@
 (defn orf [a b] (or a b))
 (defn notf [a] (not a))
 (defn member [a b] (contains b a))
+(defn div [a b] (/ a b))
+(defn applyfun [a b] (get a b))
 
