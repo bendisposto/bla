@@ -4,7 +4,10 @@
 (declare mk_set mk_tuple mk_rel l_and l_or l_not contains$)
 
 (defmacro lift [name op] `(defn ~name [a# b#] (lift$ ~op a# b#)))
-(defmacro autolift [op] `(defn ~(symbol (str "__" op)) [a# b#] (lift$ ~op a# b#)))
+
+(defmacro autolift
+  ([op] `(defn ~(symbol (str "__" op)) [a# b#] (lift$ ~op a# b#)))
+  ([op & ops] `(do (defn ~(symbol (str "__" op)) [a# b#] (lift$ ~op a# b#)) (autolift ~@ops))))
 
 (defn lift$ [op & p] (fn [e] (apply op ((apply juxt p) e)))) ;((juxt f g) a) = [(f a) (g a)]
 
@@ -25,12 +28,8 @@
 
 
 ;Expressions
-(lift add +)
-(lift sub -)
-(lift mult *)
+(autolift + - * > >= < <=)
 (lift div /)
-
-(autolift +)
 
 (lift sunion union)
 (lift sintersect intersection)
@@ -41,11 +40,6 @@
 ; Predicates
 (lift jand l_and)
 (lift jor l_or)
-
-(lift grt >)
-(lift grteq >=)
-(lift less <)
-(lift lesseq <=)
 
 (lift member contains$)
 (lift eq =)

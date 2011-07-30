@@ -12,23 +12,23 @@
 )
 
 (deftest arithmetic_preds 
-  (is (ev (less (intgr 3) (intgr 4)))  "3 < 4") 
-  (isnt (ev (less (intgr 4) (intgr 3)))  "not 4 < 3") 
-  (is (ev (lesseq (intgr 3) (intgr 4)))  "3 <= 4") 
-  (is (ev (lesseq (intgr 3) (intgr 3)))  "3 <= 3") 
-  (isnt (ev (lesseq (intgr 4) (intgr 3)))  "not 4 <= 3") 
+  (is (ev (__< (intgr 3) (intgr 4)))  "3 < 4") 
+  (isnt (ev (__< (intgr 4) (intgr 3)))  "not 4 < 3") 
+  (is (ev (__<= (intgr 3) (intgr 4)))  "3 <= 4") 
+  (is (ev (__<= (intgr 3) (intgr 3)))  "3 <= 3") 
+  (isnt (ev (__<= (intgr 4) (intgr 3)))  "not 4 <= 3") 
 
-  (isnt (ev (grt (intgr 3) (intgr 4)))  "not 3 > 4") 
-  (is (ev (grt (intgr 4) (intgr 3)))  "4 > 3") 
-  (isnt (ev (grteq (intgr 3) (intgr 4)))  "not 3 >= 4") 
-  (is (ev (grteq (intgr 3) (intgr 3)))  "3 >= 3")
+  (isnt (ev (__> (intgr 3) (intgr 4)))  "not 3 > 4") 
+  (is (ev (__> (intgr 4) (intgr 3)))  "4 > 3") 
+  (isnt (ev (__>= (intgr 3) (intgr 4)))  "not 3 >= 4") 
+  (is (ev (__>= (intgr 3) (intgr 3)))  "3 >= 3")
 )
 
 (deftest complex-constructs 
-  (is (= (ev (__+ (intgr 1) (intgr 2))) 3) "adding 2 integers")
-  (is (= (ev (add (add (intgr 1) (intgr 2)) (intgr 5))) 8) "adding 3 integers")
-  (is (= ((add (vrb :a) (vrb :b)) {:a 1, :b 3}) 4) "adding vars")
-  (is (= ((add (intgr 2) (vrb :b)) {:a 1, :b 3}) 5) "adding var to int")
+  (is (= (ev (__+ (intgr 1) (intgr 2))) 3) "__+ing 2 integers")
+  (is (= (ev (__+ (__+ (intgr 1) (intgr 2)) (intgr 5))) 8) "__+ing 3 integers")
+  (is (= ((__+ (vrb :a) (vrb :b)) {:a 1, :b 3}) 4) "__+ing vars")
+  (is (= ((__+ (intgr 2) (vrb :b)) {:a 1, :b 3}) 5) "__+ing var to int")
 )
 
 (deftest set-construction
@@ -49,10 +49,10 @@
 )
 
 (deftest junctors 
-	(isnt (ev (jand (grt (intgr 4) (intgr 3)) (less (intgr 4) (intgr 3)))))
-	(is (ev (jand (grt (intgr 4) (intgr 3)) (grt (intgr 4) (intgr 3)))))
-	(is (ev (jor (grt (intgr 4) (intgr 3)) (less (intgr 4) (intgr 3)))))
-	(isnt (ev (jor (less (intgr 4) (intgr 3)) (less (intgr 4) (intgr 3)))))
+	(isnt (ev (jand (__> (intgr 4) (intgr 3)) (__< (intgr 4) (intgr 3)))))
+	(is (ev (jand (__> (intgr 4) (intgr 3)) (__> (intgr 4) (intgr 3)))))
+	(is (ev (jor (__> (intgr 4) (intgr 3)) (__< (intgr 4) (intgr 3)))))
+	(isnt (ev (jor (__< (intgr 4) (intgr 3)) (__< (intgr 4) (intgr 3)))))
 )
 
 (deftest tuple-construction
