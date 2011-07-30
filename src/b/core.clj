@@ -4,6 +4,7 @@
 (declare mk_set mk_tuple mk_rel l_and l_or l_not contains$)
 
 (defmacro lift [name op] `(defn ~name [a# b#] (lift$ ~op a# b#)))
+(defmacro autolift [op] `(defn ~(symbol (str "__" op)) [a# b#] (lift$ ~op a# b#)))
 
 (defn lift$ [op & p] (fn [e] (apply op ((apply juxt p) e)))) ;((juxt f g) a) = [(f a) (g a)]
 
@@ -28,6 +29,8 @@
 (lift sub -)
 (lift mult *)
 (lift div /)
+
+(autolift +)
 
 (lift sunion union)
 (lift sintersect intersection)

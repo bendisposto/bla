@@ -25,7 +25,7 @@
 )
 
 (deftest complex-constructs 
-  (is (= (ev (add (intgr 1) (intgr 2))) 3) "adding 2 integers")
+  (is (= (ev (__+ (intgr 1) (intgr 2))) 3) "adding 2 integers")
   (is (= (ev (add (add (intgr 1) (intgr 2)) (intgr 5))) 8) "adding 3 integers")
   (is (= ((add (vrb :a) (vrb :b)) {:a 1, :b 3}) 4) "adding vars")
   (is (= ((add (intgr 2) (vrb :b)) {:a 1, :b 3}) 5) "adding var to int")
