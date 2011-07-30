@@ -24,11 +24,19 @@
   (is (ev (__>= (intgr 3) (intgr 3)))  "3 >= 3")
 )
 
-(deftest complex-constructs 
-  (is (= (ev (__+ (intgr 1) (intgr 2))) 3) "__+ing 2 integers")
-  (is (= (ev (__+ (__+ (intgr 1) (intgr 2)) (intgr 5))) 8) "__+ing 3 integers")
-  (is (= ((__+ (vrb :a) (vrb :b)) {:a 1, :b 3}) 4) "__+ing vars")
-  (is (= ((__+ (intgr 2) (vrb :b)) {:a 1, :b 3}) 5) "__+ing var to int")
+(deftest arithmetic 
+  (is (= (ev (__+ (intgr 1) (intgr 2))) 3) "1+2=3")
+  (is (= (ev (__+ (__+ (intgr 1) (intgr 2)) (intgr 5))) 8) "1+2+5=8")
+  (is (= ((__+ (vrb :a) (vrb :b)) {:a 1, :b 3}) 4) "a+b=4, a=1, b=3")
+  (is (= ((__+ (intgr 2) (vrb :b)) {:a 1, :b 3}) 5) "2+b=5, a=1, b=3")
+  (is (= ((__- (intgr 2) (vrb :b)) {:a 1, :b 3}) -1) "2-b=-1, a=1, b=3")
+  (is (= (ev (__- (__- (intgr 10) (intgr 5)) (intgr 2))) 3) "(10-5)-2=3")
+  (is (= (ev (__* (__* (intgr 10) (intgr 5)) (intgr 2))) 100) "(10*5)*2=100")
+  (is (= (ev (__quot (__quot (intgr 10) (intgr 5)) (intgr 2))) 1) "(10/5)/2=1")
+  (is (= (ev (__* (__quot (intgr 10) (intgr 5)) (intgr 5))) 10) "(10/5)*5=10")
+  (is (= (ev (__* (__+ (intgr 10) (intgr 5)) (intgr 2))) 30) "(10+5)*2=30")
+  (is (= (ev (__mod (intgr 10) (intgr 3))) 1) " 10 mod 3 = 1")
+  (is (= (ev (__mod (intgr 10) (intgr 3))) 1) " 10 mod 3 = 1")
 )
 
 (deftest set-construction

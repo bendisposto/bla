@@ -1,7 +1,7 @@
 (ns b.core
 	(:use [clojure.set]))
 
-(declare mk_set tuple mk_rel  andf orf notf member div applyfun)
+(declare mk_set tuple mk_rel  andf orf notf member  applyfun)
 
 (defmacro lift [name op] `(defn ~name [a# b#] (lift$ ~op a# b#)))
 
@@ -20,7 +20,7 @@
 	(= '__tuple (first (first elements))) `(lift$ mk_rel ~@elements)
 	:else `(lift$ mk_set ~@elements)))	
 
-(autolift + - * > >= < <= union intersection difference = andf orf notf mod member tuple div applyfun)
+(autolift + - * > >= < <= union intersection difference = andf orf notf mod member tuple quot applyfun)
 
 ;;;;;;;;;
 (defn ev [x] (x {}))
@@ -34,6 +34,5 @@
 (defn orf [a b] (or a b))
 (defn notf [a] (not a))
 (defn member [a b] (contains b a))
-(defn div [a b] (/ a b))
 (defn applyfun [a b] (get a b))
 
