@@ -3,6 +3,12 @@
 	)
 
 
+(defn makeId 
+	([x]  (list (.getText x)))
+    ([x & xs] (conj  (apply makeId xs) (.getText x))))
+
+(defn getId [n] (keyword (apply str  (interpose "." (apply makeId (.getIdentifier n))))))
+
 (defn create [start]
 
     (let [sb (StringBuffer.) visitor (
@@ -13,6 +19,12 @@
 					(.append "(b.core/AIntegerExpression ") 
 					(.append (.. n (getLiteral) (getText))) 
 				    (.append ")")))
+			(caseAIdentifierExpression [n] 
+
+			(doto sb 
+					(.append "(b.core/AIdentifierExpression ") 
+					(.append (getId n)) 
+					(.append ")")))	
 	)
 	] 
 	    (.apply start visitor)
