@@ -5,23 +5,22 @@
 	)
 
 (declare mk_set tuple mk_rel  andf orf notf member  applyfun)
-
-(defmacro lift [name op] `(defn ~name [a# b#] (lift$ ~op a# b#)))
-
-;(defmacro autolift
-;  ([op] `(defn ~(symbol (str "__" op)) [a# b#] (lift$ ~op a# b#)))
-; ([op & ops] `(do (defn ~(symbol (str "__" op)) [a# b#] (lift$ ~op a# b#)) (autolift ~@ops))))
-
 (defn lift$ [op & p] (fn [e] (apply op ((apply juxt p) e)))) ;((juxt f g) a) = [(f a) (g a)]
+
+(defmacro lift 
+	([name op] `(defn ~name [a# b#] (lift$ ~op a# b#)))
+	([name op & more] `(do (defn ~name [a# b#] (lift$ ~op a# b#)) (lift ~@more))))
+
+(defmacro skip 
+	([name] `(defn ~name [x#] (fn [e#] (x# e#))))
+	([name & p] `(do (defn ~name [x#] (fn [e#] (x# e#))) (skip ~@p))))
+
 
 (defn AIdentifierExpression [x] (fn [e] (e x)))
 (defn AIntegerExpression [x] (fn [e] x))
 (defn AFalseExpression [] (fn [e] false))
 (defn ATrueExpression [] (fn [e] true))
 
-(defmacro skip 
-	([name] `(defn ~name [x#] (fn [e#] (x# e#))))
-	([name & p] `(do (defn ~name [x#] (fn [e#] (x# e#))) (skip ~@p))))
 
 (defmacro __set [& elements]
   (cond 
@@ -29,9 +28,7 @@
 	:else `(lift$ mk_set ~@elements)))	
 
 (skip AExpressionParseUnit Start APredi)
-(lift AAddExpression +)
-
-;(autolift + - * > >= < <= union intersection difference = andf orf notf mod member tuple quot applyfun)
+(lift AAddExpression + AModuloExpression mod ADivExpression /)
 
 ;;;;;;;;;
 (defn ev [x] (x {}))
@@ -46,11 +43,11 @@
 (defn applyfun [a b] (get a b))
 
 (defn parse [l] 
-	(let [input (apply str (interleave l (cycle [" "])))]
+	(let [input (apply str (interpose " " l))]
        (BParser/parse input)))
 
 (defn -main[ & arg]
-  (let [x (read-string (create (BParser/parse (first arg))))] 
+  (let [x (read-string (create (parse  arg)))] 
     (println (ev (eval x))) 
   )
 )
