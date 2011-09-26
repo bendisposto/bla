@@ -1,8 +1,11 @@
 (ns b.core
 	(:use clojure.set b.visitor)
 	(:import de.be4.classicalb.core.parser.BParser)
+	(:refer-clojure :exclude [compile])
 	(:gen-class)
 	)
+
+
 
 (declare mk_set tuple mk_rel  andf orf notf member  applyfun)
 (defn lift$ [op & p] (fn [e] (apply op ((apply juxt p) e)))) ;((juxt f g) a) = [(f a) (g a)]
@@ -15,23 +18,24 @@
 	([name] `(defn ~name [x#] (fn [e#] (x# e#))))
 	([name & p] `(do (defn ~name [x#] (fn [e#] (x# e#))) (skip ~@p))))
 
-
 (defn AIdentifierExpression [x] (fn [e] (e x)))
 (defn AIntegerExpression [x] (fn [e] x))
 (defn AFalseExpression [] (fn [e] false))
 (defn ATrueExpression [] (fn [e] true))
-
 
 (defmacro __set [& elements]
   (cond 
 	(= '__tuple (first (first elements))) `(lift$ mk_rel ~@elements)
 	:else `(lift$ mk_set ~@elements)))	
 
-(skip AExpressionParseUnit Start APredi)
-(lift AAddExpression + AModuloExpression mod ADivExpression /)
+(skip AExpressionParseUnit APredicateParseUnit Start AConvertBoolExpression)
+(lift AAddExpression + AModuloExpression mod ADivExpression / AAndExpression andf AEqualPredicate =)
 
 ;;;;;;;;;
-(defn ev [x] (x {}))
+(defn evaluate 
+	([x] (x {}))
+	([x env] (x env)))
+	
 (defn mk_set [& e] (set e))
 (defn mk_rel [& e] (apply hash-map (flatten e)))
 (defn tuple [a b] [a b])
@@ -42,13 +46,14 @@
 (defn member [a b] (contains b a))
 (defn applyfun [a b] (get a b))
 
-(defn parse [l] 
-	(let [input (apply str (interpose " " l))]
-       (BParser/parse input)))
+(defn bparser [x] (BParser/parse x))
 
-(defn -main[ & arg]
-  (let [x (read-string (create (parse  arg)))] 
-    (println (ev (eval x))) 
-  )
-)
-	
+; create transforms the java AST into a clojure version
+(def parse (comp read-string create bparser))
+
+(def compile eval)
+
+(def run (comp evaluate compile parse))
+
+(defn -main[ arg]
+    (println (run arg)))

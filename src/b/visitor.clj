@@ -1,5 +1,5 @@
 (ns b.visitor
-	(:import de.be4.classicalb.core.parser.analysis.DepthFirstAdapter LispTransformer)
+	(:import de.be4.classicalb.core.parser.analysis.DepthFirstAdapter)
 	)
 
 
