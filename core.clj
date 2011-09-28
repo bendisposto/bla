@@ -1,19 +1,19 @@
-(ns b.test.core
-  (:use [b.core])
-  (:use [clojure.test]))
-
-(defmacro isnt 
-    [tst & desc] `(is (not ~tst) ~@desc))
-
-
-
-
-(deftest simple-constructs 
-  (is (= (evaluate (AIntegerExpression 3)) 3) "Simple Integer") 
-  (is (= (evaluate (AIdentifierExpression :x) {:x 3}) 3) "Variable lookup")
-;  (is (= (ev (bool true)) true) "Simple Boolean")
-)
-
+;(ns b.test.core
+;  (:use [b.core])
+;  (:use [clojure.test]))
+;
+;(defmacro isnt 
+;    [tst & desc] `(is (not ~tst) ~@desc))
+;
+;
+;
+;
+;(deftest simple-constructs 
+;  (is (= (evaluate (AIntegerExpression 3)) 3) "Simple Integer") 
+;  (is (= (evaluate (AIdentifierExpression :x) {:x 3}) 3) "Variable lookup")
+;;  (is (= (ev (bool true)) true) "Simple Boolean")
+;)
+;
 ;(deftest arithmetic_preds 
 ;  (is (ev (__< (intgr 3) (intgr 4)))  "3 < 4") 
 ;  (isnt (ev (__< (intgr 4) (intgr 3)))  "not 4 < 3") 

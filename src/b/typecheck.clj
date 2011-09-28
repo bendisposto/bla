@@ -1,6 +1,6 @@
 (ns b.typecheck
-	(:use b.core)
 	(:gen-class)
 	)
 	
-(defn typecheck [env expr] )
+(defn typecheck [ast] ;(println "typechecking" ast) 
+        [ast {}])
