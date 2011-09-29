@@ -15,9 +15,9 @@
 	        (defaultIn [n] (doto sb (.append "(") (.append "b.interpreter/") (.append (.. n (getClass) (getSimpleName)))))
         	(defaultOut [n] (.append sb ")"))
             (caseAIntegerExpression [n] (doto sb 
-					(.append "(b.interpreter/AIntegerExpression (constantly ") 
+					(.append "(b.interpreter/AIntegerExpression  ") 
 					(.append (.. n (getLiteral) (getText))) 
-				    (.append "))")))
+				    (.append ")")))
 			(caseAIdentifierExpression [n] (doto sb 
 					(.append "(b.interpreter/AIdentifierExpression ") 
 					(.append (getId n)) 
