@@ -6,45 +6,34 @@
    (:use clojure.algo.monads)
 )
 
-;(defmacro lift_bin 
-;	([name op] (let [args (into [] (for [_ (range 0 n)] (gensym)))] 
-;           `(defn ~name ~args (fn [s#] (apply ~op ((apply juxt ~args) s#))))))
-;	([name op & more] `(do (lift ~name ~op) (lift ~@more))))
-	
-(defmacro liftex [name op]	
-	`(defn ~name [f1# f2#]
-		(fn [s0#] (let 
-			     [[v1# s1#] (f1# s0#)
-				  [v2# s2#] (f2# s1#)]
-				  [(~op v1# v2#) s2#]))))	
 				
-(defmacro liftexm [name op n]
-	`(def ~name (with-monad state-m (m-lift ~n ~op))))
+(defmacro lift 
+	([name op n]        `(def ~name (with-monad state-m (m-lift ~n ~op))))
+	([name op n & more] `(do (lift ~name ~op ~n) (lift ~@more))))
 	
-(defn AIntegerExpression [x] (fn [e] [x e]))
-(liftexm AAddExpression + 2)
-
+(def AIntegerExpression (with-monad state-m m-result))
 
 (defmacro skip 
 	([op] `(defmacro ~op [c#] c#))
 	([op & more] `(do (skip ~op) (skip ~@more))))
 
-(defn andf [a b] (and a b))
 
-;(lift                             
-;	 AAddExpression       +       
-;	 AModuloExpression    mod     
-;	 ADivExpression       /       
-;	 AAndExpression       andf    
-;	 AEqualPredicate      =       
-;	)                             
-	
+(lift                             
+	 AAddExpression       +             2
+	 AModuloExpression    mod           2
+	 ADivExpression       (comp int /)  2
+	 AConjunctPredicate   #(and % %2)   2
+	 AEqualPredicate      =             2
+	 AGreaterPredicate    >             2
+	 ALessPredicate       <             2 
+	)                             
+   
 (skip AExpressionParseUnit APredicateParseUnit Start AConvertBoolExpression)
 
 (def AIdentifierExpression fetch-val)
 
 (def compile eval)
-(defn evaluate [env [ast types]] (println "evaluate " ast "in" env) 
+(defn evaluate [env [ast types]] ;(println "evaluate " ast "in" env) 
          ((compile ast) env))
 (defn run [text, env]  (->> text reader/parse type/typecheck (evaluate env)))
 (defn -main[ arg]
