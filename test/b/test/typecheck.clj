@@ -4,9 +4,3 @@
   (:use [clojure.test]))
 
 
-;(deftest simple-typecheck 
-;	(let [ast  '(AIdentifierExpression x)]
-;       (is (= (typecheck ast) [ast {:x :unknown}]) "Simple Identifier")
-;))
-;
-;

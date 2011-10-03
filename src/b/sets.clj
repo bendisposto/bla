@@ -35,7 +35,11 @@
 (def integers (PredicateSet. number?))
 (def bools #{true, false})
 (def strings (PredicateSet. string?))
+
+(def all-ints (interleave (iterate dec 0) (iterate inc 1)))
+
 (defn mk-set [x] (PredicateSet. x))
 (defn union [x y] (UnionSet. x y))
 (defn intersection [x y] (IntersectionSet. x y))
 (defn difference [x y] (DifferenceSet. x y))
+

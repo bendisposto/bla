@@ -2,7 +2,7 @@
    (:gen-class)	
    (:require [b.reader :as reader])
    (:require [b.typecheck :as type])
-   (:require [clojure.set :as set])
+   (:require [b.sets :as set])
    (:use clojure.algo.monads)
 )
 
@@ -39,14 +39,14 @@
 	 AMultOrCartExpression                   bmult                           2
 	 APowSubsetExpression                    powerset                        1
 	 ACardExpression                         count                           1
-     ANotBelongPredicate                     notmember                       2
-     AIncludePredicate                       set/subset?                     2
-     AMinExpression                          bmin                            1
-     AMaxExpression                          bmax                            1
-     AIntervalExpression                     brange                          2
-     ALessEqualPredicate                     <=                              2
+         ANotBelongPredicate                     notmember                       2
+;     AIncludePredicate                       set/subset?                     2
+         AMinExpression                          bmin                            1
+         AMaxExpression                          bmax                            1
+         AIntervalExpression                     brange                          2
+         ALessEqualPredicate                     <=                              2
   	 AGreaterEqualPredicate                  >=                              2
-     ACoupleExpression                       bcouple                         2
+         ACoupleExpression                       bcouple                         2
    	)                             
 
 (defmacro AImplicationPredicate [x y] `(ADisjunctPredicate (ANegationPredicate ~x) ~y))   
@@ -55,9 +55,9 @@
 (defmacro APow1SubsetExpression [x] `(AMinusOrSetSubtractExpression (APowSubsetExpression ~x) (APowSubsetExpression (AEmptySetExpression))))
 (defmacro AFinSubsetExpression [x] `(APowSubsetExpression ~x))
 (defmacro AFin1SubsetExpression [x] `(APow1SubsetExpression ~x))
-(defmacro AIncludeStrictlyPredicate [A B] `(AConjunctPredicate (AIncludePredicate ~A ~B) (AUnequalPredicate ~A ~B)))
-(defmacro ANotIncludePredicate [A B] `(ANegationPredicate (AIncludePredicate ~A ~B)))
-(defmacro ANotIncludeStrictlyPredicate [A B] `(ANegationPredicate (AIncludeStrictlyPredicate ~A ~B)))
+;(defmacro AIncludeStrictlyPredicate [A B] `(AConjunctPredicate (AIncludePredicate ~A ~B) (AUnequalPredicate ~A ~B)))
+;(defmacro ANotIncludePredicate [A B] `(ANegationPredicate (AIncludePredicate ~A ~B)))
+;(defmacro ANotIncludeStrictlyPredicate [A B] `(ANegationPredicate (AIncludeStrictlyPredicate ~A ~B)))
 (defmacro ABelongPredicate [A B] `(ANegationPredicate (ANotBelongPredicate ~A ~B)))
 (defmacro ALessPredicate [A B] `(ANegationPredicate (AGreaterEqualPredicate ~A ~B)))
 (defmacro AGreaterPredicate [A B] `(ANegationPredicate (ALessEqualPredicate ~A ~B)))
