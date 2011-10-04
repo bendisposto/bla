@@ -4,6 +4,7 @@
   :dependencies [[org.clojure/clojure "1.3.0"]
                  ;[org.clojure/clojure-contrib "1.2.0"]
                  ;[org.clojure/core.logic "0.6.4"]
+                 ;[org.clojure/math.combinatorics "0.0.1"]
                  [org.clojure/algo.monads "0.1.0"]
 				 [de.prob/bparser "2.0.58"]
 				 [de.prob/parserbase "2.0.58"]               
