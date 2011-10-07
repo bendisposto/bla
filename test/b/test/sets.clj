@@ -1,31 +1,21 @@
 (ns b.test.sets
   (:use [b.sets])
-  (:import b.sets.B-Set)
-  (:use [clojure.test]))
+  (:import b.sets.BSet)
+  (:import b.sets.PredSet)
+  (:use midje.sweet))
 
-(defmacro ignore [_ _])
+(tabular "member? tests"
+ (fact (member? ?s ?e) => ?tf)
+ ?s    |    ?e     | ?tf
+ nat   |    1      | true
+ nat   |    -1     | false
+ nat   |   0       | true)
 
-(def semi-reject-nat (B-Set. (fn [] int-type) (constantly false) neg? #{:reject?}))
-(def semi-accept-nat (B-Set. (fn [] int-type) 
-#(or (pos? %) (zero? %)) 
-(constantly false) 
-#{:accept?}))
-(def weird-nat (B-Set. (fn [] int-type) 
-                       #(and (even? %) (or (pos? %) (zero? %))) 
-                       #(or (not (odd? %)) (neg? %)) 
-                       #{}))
 
-(deftest membertest
-	(is (member? 1 nat))
-	(is (member? 0 nat))
-	(is (not (member? -1 nat)))
-	(is (member? 1 semi-reject-nat))
-	(is (member? 0 semi-reject-nat))
-	(is (not (member? -1 semi-reject-nat)))
-	(is (member? 1 semi-accept-nat))
-	(is (member? 0 semi-accept-nat))
-	(ignore "infinite loop because of semi-decision" (is (not (member? -1 semi-accept-nat))))
-	(is (member? 1 weird-nat))
-	(is (member? 0 weird-nat))
-	(is (not (member? -1 weird-nat))))
+(fact "elements of nat (bounded)"
+      (bounded-elements nat #(< -2 % 4)) => (just [0 1 2 3] :in-any-order))
+
+(fact "union"
+      (bounded-elements (union #{1,2,3} #{8,9}) #(< -2 % 40))  => (just [1,2,3,8,9] :in-any-order))
+
 
