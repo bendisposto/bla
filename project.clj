@@ -7,7 +7,7 @@
                  ;[org.clojure/math.combinatorics "0.0.1"]
                  [midje "1.2.0"]
                  [org.clojure/algo.monads "0.1.0"]
-;                 [org.clojure/core.match "0.2.0-alpha3"]
+ ;                [org.clojure/core.match "0.2.0-alpha3"]
 		 [de.prob/bparser "2.0.58"]
 		 [de.prob/parserbase "2.0.58"]               
 		 [de.prob/prologlib "2.0.58"]]

@@ -19,7 +19,8 @@
 (defmacro isfalse [predicate] `(predtest ~predicate false))	
 (defmacro check [expression expect] (let [name (gensym)] `(deftest ~name (verify ~expression (exp ~expression) ~expect))))	
 
-(defmacro checks[_ _])
+(defmacro checks [expression result] (let [name (gensym)] `(deftest ~name (let [[res# env#] (run (exp ~expression) {})] (is (= res# ~result))))))
+(defmacro check_inf_s [expression result bound] (let [name (gensym)] `(deftest ~name (let [[res# env#] (run (exp ~expression) {})] (is (= (bounded-enumerate res# ~bound) ~result))))))
 
 (deftest test-lookup (verify "lookup a in {:a 3}" (exp "a") 3 {:a 3}))
 (deftest test-lookup-and-add (verify "lookup a+1 in {:a 3}" (exp "1+a") 4 {:a 3}))
@@ -133,12 +134,12 @@
 (checks "{} /\\ {1,2,3}" #{})
 (checks "{1,2,3,4,5} - {1,3}" #{2,4,5}) ; Set difference
 
+(checks "NAT" natural)
+(check_inf_s "NAT" #{0,1,2,3,4,5,6} #(<= % 6))
 
-(comment
 (check "1 |-> 2", [1,2])
 (checks "{1 |-> 2, 2 |-> 3}", #{[1,2] [2,3]})
 (check "{1,2}*{3,4}",#{[1 3] [1 4] [2 3] [2 4]})
-)
 
 ;(checks "POW({})",#{#{}})
 ;(checks "POW({1})",#{#{}, #{1}})

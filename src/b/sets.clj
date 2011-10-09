@@ -1,65 +1,76 @@
-(ns b.sets (:gen-class))
+(ns b.sets
+  (:require [clojure.set :as set])
+  (:gen-class))
 
-(defprotocol BSet
-  (etype [this])
-  (member? [this e])
-  (decider [this]))
+(defprotocol B-Type
+  (finite? [this])
+  (elements [this]))
 
-(defrecord PredSet [_type _decider]
-  BSet
-  (etype [this] _type)
-  (member? [this e] ((decider this) e))
-  (decider [this] _decider))
+(def int-type
+  (reify B-Type
+    (finite? [_] false)
+    (elements [_] (interleave (iterate dec 0) (iterate inc 1)))))
 
-(extend-type clojure.lang.PersistentHashSet 
-  BSet
-  (etype [this] this)
-  (member? [this e] (this e))
-  (decider [this]  this))
+(def bool-type #{true, false})
 
-(def int-type (interleave (iterate dec 0) (iterate inc 1)))
-(def bool-type '(false true))
 (def printable-chars (map char (range 32 126)))
 
-(defn make-deferred-type [name]  (for [p (repeat name) n (iterate inc 1)] (str p n)))
-(defn make-explicit-type [& elements] (into #{} elements))
+(defn make-deferred-type [name] (fn [] (for [p (repeat name) n (iterate inc 1)] (str p n))))
+(defn make-explicit-type [& elements] (fn [] (into #{} elements)))
 
-(def nat (PredSet. (fn [] int-type) #(or (pos? %) (zero? %))))
+(defprotocol B-Set
+  (member? [this e])
+  (enum-type [this])
+  (decider [this]))
 
-(defn union [S1 S2]
-  (PredSet.
-   (type S1)
-   #(or (member? S1 %) (member? S2 %))))
+(defrecord PredicateSet [T P]
+  B-Set
+  (member? [this e] (P e))
+  (enum-type [_] T)
+  (decider [_] P))
 
-;(defn intersection [{type :type decider1 :decider} {decider2 :decider}]
- ;(B-Set.
-; type
-; #(and (decider1 %) (decider2 %))))
+(extend-type clojure.lang.PersistentHashSet
+  B-Type
+  (finite? [_] true)
+  (elements [this] this)
+  B-Set
+  (member? [this e] )
+  (enum-type [this] this)
+  (decider [this] this))
 
-;(defn difference [{type :type decider1 :decider} {decider2 :decider}]
-;(B-Set.
-; type
-; #(and (decider1 %) ((complement decider2) %))))
-;(def empty-set (B-Set. #{} #{}))
+(def natural (PredicateSet. int-type (partial <= 0)))
 
-(defn elements [S] (filter (decider S) ((etype S))))
-(defn bounded-elements [S bound] (take-while bound (filter (decider S) ((etype S)))))
+(defn combine_types [T1 T2]
+  (if (finite? T2)
+    T1
+    T2))
 
-(defn type-product [T1 T2] (for [x T1 y T1] [x y]))  ;diagonalization
-(defn type-pow [T] nil)
+(defmacro set-operation [operation combine]
+  `(fn [S1# S2#]
+     (if (and (set? S1#) (set? S2#))
+       (~operation S1# S2#)
+       (PredicateSet. (combine_types (enum-type S1#) (enum-type S2#)) (~combine S1# S2#)))))
 
-;(defn cartesian-product [{type1 :type decider1 :decider :as S} {type2 :type decider2 :decider :as T}] 
-;(Set.
-; (type-product type1 type2)
-; (fn [[x y]] (and (member? S x) (member? T y)))))
+(def union (set-operation set/union (fn [S1 S2] #(or (member? S1 %) (member? S2 %)))))
+(def intersection (set-operation set/intersection (fn [S1 S2] #(and (member? S1 %) (member? S2 %)))))
+(def difference (set-operation set/difference (fn [S1 S2] #(and (member? S1 %) (not (member? S2 %))))))
 
-;(defn card [S] (count (elements S)))
+(defn enumerate [S] (into #{} (filter (decider S) (elements (enum-type S)))))
+(defn bounded-enumerate [S bound] (into #{} (take-while bound (filter (decider S) (elements (enum-type S))))))
+
+(defn type-product [T1 T2] (for [x T1 y T1] [x y]))
+                                        ;diagonalization
+;(defn type-pow [T] nil)
+
+(defn cartesian-product [S, T] (PredicateSet. (type-product (enum-type S) (enum-type T)) (fn [[x y]] (and (member? S x) (member? T y)))))
+
+(defn card [S]  (count (enumerate S)))
+
 ;(defn pow [S]
 ;(B-Set.
 ; (type-pow S)
 ; (fn [e] (every? (partial member? S) (elements e)))))
 
-(defn mk-set [x] #{})
-(defn union [x y] x)
-(defn intersection [x y] x)
-(defn difference [x y] x)
+(defn as-predicate-set [S] (if (set? S) (PredicateSet. S S) S))
+(defn as-explicit-set [S bound] (if (set? S) S (into #{} (bounded-enumerate S bound))))
+

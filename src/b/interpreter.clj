@@ -1,5 +1,5 @@
 (ns b.interpreter
-   (:gen-class)	
+  (:gen-class)	
    (:require [b.reader :as reader])
    (:require [b.typecheck :as type])
    (:require [b.sets :as set])
@@ -22,6 +22,7 @@
 (def AIdentifierExpression fetch-val)
 (def AIntegerExpression (with-monad wd-state-m m-result))
 (defn ASetExtensionExpression [& x] (with-monad wd-state-m ((m-lift 1 (partial into #{})) (m-seq x))))
+(defn ANatSetExpression [] (with-monad wd-state-m (m-result set/natural)))
 
 (lift                                                                       
 	 AAddExpression                          +                               2
@@ -47,6 +48,7 @@
          ALessEqualPredicate                     <=                              2
   	 AGreaterEqualPredicate                  >=                              2
          ACoupleExpression                       bcouple                         2
+
    	)                             
 
 (defmacro AImplicationPredicate [x y] `(ADisjunctPredicate (ANegationPredicate ~x) ~y))   
