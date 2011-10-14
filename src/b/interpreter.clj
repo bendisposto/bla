@@ -41,14 +41,12 @@
 	 APowSubsetExpression                    powerset                        1
 	 ACardExpression                         count                           1
          ANotBelongPredicate                     notmember                       2
-;     AIncludePredicate                       set/subset?                     2
          AMinExpression                          bmin                            1
          AMaxExpression                          bmax                            1
          AIntervalExpression                     brange                          2
          ALessEqualPredicate                     <=                              2
   	 AGreaterEqualPredicate                  >=                              2
          ACoupleExpression                       bcouple                         2
-
    	)                             
 
 (defmacro AImplicationPredicate [x y] `(ADisjunctPredicate (ANegationPredicate ~x) ~y))   
@@ -57,12 +55,14 @@
 (defmacro APow1SubsetExpression [x] `(AMinusOrSetSubtractExpression (APowSubsetExpression ~x) (APowSubsetExpression (AEmptySetExpression))))
 (defmacro AFinSubsetExpression [x] `(APowSubsetExpression ~x))
 (defmacro AFin1SubsetExpression [x] `(APow1SubsetExpression ~x))
-;(defmacro AIncludeStrictlyPredicate [A B] `(AConjunctPredicate (AIncludePredicate ~A ~B) (AUnequalPredicate ~A ~B)))
-;(defmacro ANotIncludePredicate [A B] `(ANegationPredicate (AIncludePredicate ~A ~B)))
-;(defmacro ANotIncludeStrictlyPredicate [A B] `(ANegationPredicate (AIncludeStrictlyPredicate ~A ~B)))
 (defmacro ABelongPredicate [A B] `(ANegationPredicate (ANotBelongPredicate ~A ~B)))
 (defmacro ALessPredicate [A B] `(ANegationPredicate (AGreaterEqualPredicate ~A ~B)))
 (defmacro AGreaterPredicate [A B] `(ANegationPredicate (ALessEqualPredicate ~A ~B)))
+(defmacro AIncludePredicate [A B] `(ABelongPredicate ~A (APowSubsetExpression ~B)))
+
+;(defmacro AIncludeStrictlyPredicate [A B] `(AConjunctPredicate (AIncludePredicate ~A ~B) (AUnequalPredicate ~A ~B)))
+;(defmacro ANotIncludePredicate [A B] `(ANegationPredicate (AIncludePredicate ~A ~B)))
+;(defmacro ANotIncludeStrictlyPredicate [A B] `(ANegationPredicate (AIncludeStrictlyPredicate ~A ~B)))
 
 ; ------------           MAIN           ------------           
 
@@ -98,7 +98,7 @@
 (defn powerset [ls]
     (if (empty? ls) #{#{}}
         (set/union (powerset (next ls))
-  	    (map #(conj % (first ls)) (powerset (next ls))))))
+                    (into #{} (map #(conj % (first ls)) (powerset (next ls)))))))
 
 	
 (defn notmember [e S] (nil? (S e)))	
@@ -106,3 +106,22 @@
 (defn brange [m n] (into #{} (range m (inc n))))
 
 
+(defn pow [k n]
+  (if (= k n) (recur 1 (inc n))
+      (do (println k) (recur (inc k) n))))
+
+(defn minmin [s1 s2]
+  (cond (not (seq s1)) (apply min s2)
+        (not (seq s2)) (apply min s1)
+        :otherwise (min (apply min s1) (apply min s2))))
+
+(defn pow2 [z o t]
+  (if (or (seq z) (seq o))
+    (let [j (minmin z o) nz (into #{} (filter #(< % j) t)) nt (into #{} (filter #(> % j) t))]
+      (if (z j)
+        (lazy-cat [j] (pow2 (clojure.set/union nz (disj z j)) (conj o j) nt))
+        (lazy-cat [j] (pow2 (clojure.set/union z nz) (disj o j) (conj nt j)))))
+    (let [m (inc (apply max t))]
+        (lazy-cat [m] (pow2 t #{m} #{})))))
+
+;(def pow-int (pow [1] [] [] 2))
