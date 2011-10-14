@@ -4,11 +4,13 @@
   (:import b.sets.PredicateSet)
   (:use midje.sweet))
 
+
+
 (tabular "Members of Natural"
          (fact (member? natural ?e) => ?tf)
-         ?e    | ?tf
-         1     | true
-         2     | true
+         ?e    | ?tf    
+         1     | true  
+         2    |  true  
          -1    | false
          0     | true)
 
@@ -39,7 +41,7 @@
   (card (union #{1,2} #{3,4})) => 4
   (card (union #{1} #{1,2})) => 2)
 
-(fact "Union/Intersectuin/Difference of Predicate Sets"
+(fact "Union/Intersection/Difference of Predicate Sets"
   (let [s1 (PredicateSet. int-type #(< 2 % 6))
         s2 (PredicateSet. int-type #(< 4 % 10))
         u (union s1 s2)
@@ -50,5 +52,19 @@
     (map (partial member? i) [3,4,5,6]) => (seq [false false true false])
     (map (partial member? d) [3,4,5,6,7,8,9,10]) => (seq [false true true false false true true false])))
 
+(fact "Mixing explicit and predicate Sets"
+  (bounded-enumerate (union #{-1,-2} natural) (int-range -2 2)  1000) => #{-2,-1,0,1,2}
+  (bounded-enumerate (union natural #{-1,-2}) (int-range -2 2)  1000) => #{-2,-1,0,1,2}
+  (bounded-enumerate (intersection #{-1,-2} natural) (constantly true) 1000) => #{}
+  (bounded-enumerate (intersection natural #{-1,-2}) (constantly true) 1000) => #{}
+  (bounded-enumerate (intersection natural #{17,4}) (constantly true) 1000) => #{4,17})
+
+(fact "Enumerator of an intersection with a finite set ist always finite"
+  (let [s1 natural s2 #{1,2,3,4} e (enum-type (intersection s1 s2))]
+    (finite? e) => true))
+
+(comment (fact "Powerset"
+   (powerset #{}) => #{#{}}
+   (powerset #{1}) => #{#{}, #{1}}))
 
 

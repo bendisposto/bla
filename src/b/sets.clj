@@ -34,29 +34,38 @@
   (finite? [_] true)
   (elements [this] this)
   B-Set
-  (member? [this e] )
+  (member? [this e] (this e))
   (enum-type [this] this)
   (decider [this] this))
 
 (def natural (PredicateSet. int-type (partial <= 0)))
 
-(defn combine_types [T1 T2]
-  (if (finite? T2)
-    T1
-    T2))
+(defn combine_types [T1 T2 FC]
+  (let [fin1 (finite? T1)
+        fin2 (finite? T2)
+        finite (FC fin1 fin2)
+        etype (if fin1 T2 T1)]
+    (if finite
+      (reify B-Type
+        (finite? [_] (FC fin1 fin2))
+        (elements [_] (elements etype)))
+      etype)))
 
-(defmacro set-operation [operation combine]
+(defn int-range [minv,maxv] (fn [x] (<= minv x maxv)))
+
+(defmacro set-operation [operation l_combine f_combine]
   `(fn [S1# S2#]
      (if (and (set? S1#) (set? S2#))
        (~operation S1# S2#)
-       (PredicateSet. (combine_types (enum-type S1#) (enum-type S2#)) (~combine S1# S2#)))))
+       (PredicateSet. (combine_types (enum-type S1#) (enum-type S2#) ~f_combine) (~l_combine S1# S2#)))))
 
-(def union (set-operation set/union (fn [S1 S2] #(or (member? S1 %) (member? S2 %)))))
-(def intersection (set-operation set/intersection (fn [S1 S2] #(and (member? S1 %) (member? S2 %)))))
-(def difference (set-operation set/difference (fn [S1 S2] #(and (member? S1 %) (not (member? S2 %))))))
+(def union (set-operation set/union (fn [S1 S2] #(or (member? S1 %) (member? S2 %))) #(and %1 %2) ))
+(def intersection (set-operation set/intersection (fn [S1 S2] #(and (member? S1 %) (member? S2 %))) #(or %1 %2) ))
+(def difference (set-operation set/difference (fn [S1 S2] #(and (member? S1 %) (not (member? S2 %)))) (fn [a _] a)))
 
 (defn enumerate [S] (into #{} (filter (decider S) (elements (enum-type S)))))
-(defn bounded-enumerate [S bound] (into #{} (take-while bound (filter (decider S) (elements (enum-type S))))))
+(defn hard-bounded-enumerate [S hard-bound] (into #{} (filter (decider S) (take hard-bound (elements (enum-type S))))))
+(defn bounded-enumerate [S predicate hard-bound] (into #{} (filter predicate (hard-bounded-enumerate S hard-bound))))
 
 (defn type-product [T1 T2] (for [x T1 y T1] [x y]))
                                         ;diagonalization
@@ -72,5 +81,5 @@
 ; (fn [e] (every? (partial member? S) (elements e)))))
 
 (defn as-predicate-set [S] (if (set? S) (PredicateSet. S S) S))
-(defn as-explicit-set [S bound] (if (set? S) S (into #{} (bounded-enumerate S bound))))
+(defn as-explicit-set [S bound] (if (set? S) S (into #{} (hard-bounded-enumerate S bound))))
 
