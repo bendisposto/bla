@@ -68,3 +68,14 @@
    (powerset #{1}) => #{#{}, #{1}}))
 
 
+(defmacro px
+  ([v] `(fn [foo#] ~v))
+  ([v h & t] `(fn [e#] (for [~h e#] ((px ~v ~@t) (range 0 ~h))))))
+
+(defn mk_enum [n v] (if (> n 0)
+                      (let [s (gensym) body ((mk_enum (dec n) (conj v s)) (range 0 s))] (fn [e] (for [s e] body)))
+                      (constantly v)))
+
+(macroexpand '((let [a (symbol "a") b (symbol "b")] (px [a b] a b)) (range 0 10)))
+
+
