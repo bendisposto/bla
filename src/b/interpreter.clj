@@ -105,23 +105,8 @@
 (defn member [e S] (not (notmember e S)))
 (defn brange [m n] (into #{} (range m (inc n))))
 
-
-(defn pow [k n]
-  (if (= k n) (recur 1 (inc n))
-      (do (println k) (recur (inc k) n))))
-
-(defn minmin [s1 s2]
-  (cond (not (seq s1)) (apply min s2)
-        (not (seq s2)) (apply min s1)
-        :otherwise (min (apply min s1) (apply min s2))))
-
-(defn pow2 [z o t]
-  (if (or (seq z) (seq o))
-    (let [j (minmin z o) nz (into #{} (filter #(< % j) t)) nt (into #{} (filter #(> % j) t))]
-      (if (z j)
-        (lazy-cat [j] (pow2 (clojure.set/union nz (disj z j)) (conj o j) nt))
-        (lazy-cat [j] (pow2 (clojure.set/union z nz) (disj o j) (conj nt j)))))
-    (let [m (inc (apply max t))]
-        (lazy-cat [m] (pow2 t #{m} #{})))))
+;(defn pow [k n]
+;(if (= k n) (recur 1 (inc n))
+;  (do (println k) (recur (inc k) n))))
 
 ;(def pow-int (pow [1] [] [] 2))

@@ -80,6 +80,20 @@
 ; (type-pow S)
 ; (fn [e] (every? (partial member? S) (elements e)))))
 
+(defn minmin [s1 s2]
+  (cond (not (seq s1)) (apply min s2)
+        (not (seq s2)) (apply min s1)
+        :otherwise (min (apply min s1) (apply min s2))))
+
+(defn pow2 [z o t]
+  (if (or (seq z) (seq o))
+    (let [j (minmin z o) nz (into #{} (filter #(< % j) t)) nt (into #{} (filter #(> % j) t))]
+      (if (z j)
+        (lazy-cat [j] (pow2 (clojure.set/union nz (disj z j)) (conj o j) nt))
+        (lazy-cat [j] (pow2 (clojure.set/union z nz) (disj o j) (conj nt j)))))
+    (let [m (inc (apply max t))]
+        (lazy-cat [m] (pow2 t #{m} #{})))))
+
 (defn as-predicate-set [S] (if (set? S) (PredicateSet. S S) S))
 (defn as-explicit-set [S bound] (if (set? S) S (into #{} (hard-bounded-enumerate S bound))))
 
