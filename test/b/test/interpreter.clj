@@ -14,9 +14,6 @@
 (defn- peel-from-monad [[result _]] result)
 (defn- compute [f t] (-> t f (run {}) peel-from-monad))
 
-(defmacro checks [expression result] (let [name (gensym)] `(deftest ~name (let [[res# env#] (run (exp ~expression) {})] (is (= res# ~result))))))
-(defmacro check_inf_s [expression result bound] (let [name (gensym)] `(deftest ~name (let [[res# env#] (run (exp ~expression) {})] (is (= (bounded-enumerate res# ~bound) ~result))))))
-
 
 (fact "lookup"
   (run (exp "a") {:a 3}) => [3 {:a 3}])
@@ -78,23 +75,26 @@
          "3 >= 4"
          )
 
-(comment
+(tabular "Not yet working Predicates"
+         (fact (compute pred ?p) =future=> ?r)
+         ?p                            | ?r
+         "!(x).((x = 1) => (x = 1))"   | truthy
+         "!(x).((x:INT) => (x > 0))"   | falsey
+         "#(x).((x : NAT1) & (x < 1))" | falsey
+         "#(x).((x:INT) & (x > 0))"    | truthy
+         "{1,2} <: {1,2}"              | truthy
+         "{1,2} <: {1}"                | falsey
+         "{1,2} <: {1,2,3}"            | truthy
+         "{2} <: {1,2}"                | truthy
+         "{} <: {1,2}"                 | truthy
+         "{} /<: {1,2}"                | falsey
+         "{3} /<: {1,2}"               | truthy
+         "{1,2} <<: {1,2,3}"           | truthy
+         "{1,2} <<: {1,2}"             | falsey
+         "{1,2} /<<: {1,2,3}"          | falsey
+         "{1,2} /<<: {1,2}"            | truthy) 
 
-(istrue "!(x).((x = 1) => (x = 1))") ; Universal quantification
-; Existential quantification 
 
-(istrue "{1,2} <: {1,2}")
-(isfalse "{1,2} <: {1}")
-(istrue "{1,2} <: {1,2,3}")
-(istrue "{2} <: {1,2}")
-(istrue "{} <: {1,2}")
-(isfalse "{} /<: {1,2}")
-(istrue "{3} /<: {1,2}")
-(istrue "{1,2} <<: {1,2,3}")
-(isfalse "{1,2} <<: {1,2}")
-;(isfalse "{1,2} /<<: {1,2,3}")
-;(istrue "{1,2} /<<: {1,2}")
-)
 
 (tabular "Expressions"
          (fact (compute exp ?e) => ?r)
