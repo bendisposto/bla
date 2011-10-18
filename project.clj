@@ -1,5 +1,5 @@
 (defproject b "1.0.0"
-  :description "Interpreter for B"
+  :description "B Lisp Animator, an Interpreter for the B-Method in Clojure"
   :repositories {"cobra" "http://cobra.cs.uni-duesseldorf.de/artifactory/repo/"}
   :dependencies [[org.clojure/clojure "1.3.0"]
                  ;[org.clojure/core.logic "0.6.4"]
