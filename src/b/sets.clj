@@ -1,5 +1,6 @@
 (ns b.sets
   (:require [clojure.set :as set])
+  (:use clojure.algo.monads)
   (:gen-class))
 
 (defprotocol B-Type
@@ -80,18 +81,18 @@
 ; (type-pow S)
 ; (fn [e] (every? (partial member? S) (elements e)))))
 
-(defn rrange [a b] (take (- a b) (iterate dec a)))
-(defn pow-seq [n] (apply concat (map-indexed (fn [i v] (repeat (int (Math/pow 2 i)) v)) (rrange n 0))))
+(defn- rrange [a b] (take (- a b) (iterate dec a)))
+(defn- pow-seq [n] (apply concat (map-indexed (fn [i v] (repeat (int (Math/pow 2 i)) v)) (rrange n 0))))
 (def card-sequence (mapcat pow-seq (iterate inc 1)))
 
-(defn mk_set_generator [n e]
+(defn- mk_set_generator [n e]
   (if (= n 1)
     (map vector e) 
     (for [z e x  (mk_set_generator (dec n) (range (dec n) z))] (conj x z))))
 
-(defn get_generator [s n e] (if-let [g (s n)] g (mk_set_generator n e)))
+(defn- get_generator [s n e] (if-let [g (s n)] g (mk_set_generator n e)))
 
-(defn gen [f state] (let [[head new-state] (f state)] (lazy-seq (cons head (gen f new-state)))))
+(defn- gen [f state] (let [[head new-state] (f state)] (lazy-seq (cons head (gen f new-state)))))
 
 (defn- p [e state] (let [[c & cs] (:cards state) g (get_generator state c e)] [(first g)  (assoc (assoc state c (rest g)) :cards cs)]))
 
