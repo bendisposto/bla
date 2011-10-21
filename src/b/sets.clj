@@ -80,19 +80,9 @@
 ; (type-pow S)
 ; (fn [e] (every? (partial member? S) (elements e)))))
 
-(defn minmin [s1 s2]
-  (cond (not (seq s1)) (apply min s2)
-        (not (seq s2)) (apply min s1)
-        :otherwise (min (apply min s1) (apply min s2))))
-
-(defn pow2 [z o t]
-  (if (or (seq z) (seq o))
-    (let [j (minmin z o) nz (into #{} (filter #(< % j) t)) nt (into #{} (filter #(> % j) t))]
-      (if (z j)
-        (lazy-cat [j] (pow2 (clojure.set/union nz (disj z j)) (conj o j) nt))
-        (lazy-cat [j] (pow2 (clojure.set/union z nz) (disj o j) (conj nt j)))))
-    (let [m (inc (apply max t))]
-        (lazy-cat [m] (pow2 t #{m} #{})))))
+(defn rrange [a b] (take (- a b) (iterate dec a)))
+(defn pow-seq [n] (apply concat (map-indexed (fn [i v] (repeat (int (Math/pow 2 i)) v)) (rrange n 0))))
+(def card-sequence (mapcat pow-seq (iterate inc 1)))
 
 (defn mk_set_generator [n e]
   (if (= n 1)
@@ -101,11 +91,11 @@
 
 (defn get_generator [s n e] (if-let [g (s n)] g (mk_set_generator n e)))
 
-(def initialstate {:cards (pow2 #{1} #{} #{})})
-(defn  p [state e] (let [[c & cs] (:cards state) g (get_generator state c e)] [(first g)  (assoc (assoc state c (rest g)) :cards cs)]))
-(defn h [state e] (let [[head new-state] (p state e)] (lazy-cat [head] (h new-state e))))
-(def nat-pow (h initialstate (iterate inc 0)))
+(defn gen [f state] (let [[head new-state] (f state)] (lazy-seq (cons head (gen f new-state)))))
 
+(defn- p [e state] (let [[c & cs] (:cards state) g (get_generator state c e)] [(first g)  (assoc (assoc state c (rest g)) :cards cs)]))
+
+(def nat-pow (cons [] (gen (partial p (iterate inc 0)) {:cards card-sequence})))
 
 (defn as-predicate-set [S] (if (set? S) (PredicateSet. S S) S))
 (defn as-explicit-set [S bound] (if (set? S) S (into #{} (hard-bounded-enumerate S bound))))
