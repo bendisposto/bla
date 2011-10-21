@@ -94,6 +94,19 @@
     (let [m (inc (apply max t))]
         (lazy-cat [m] (pow2 t #{m} #{})))))
 
+(defn mk_set_generator [n e]
+  (if (= n 1)
+    (map vector e) 
+    (for [z e x  (mk_set_generator (dec n) (range (dec n) z))] (conj x z))))
+
+(defn get_generator [s n e] (if-let [g (s n)] g (mk_set_generator n e)))
+
+(def initialstate {:cards (pow2 #{1} #{} #{})})
+(defn  p [state e] (let [[c & cs] (:cards state) g (get_generator state c e)] [(first g)  (assoc (assoc state c (rest g)) :cards cs)]))
+(defn h [state e] (let [[head new-state] (p state e)] (lazy-cat [head] (h new-state e))))
+(def nat-pow (h initialstate (iterate inc 0)))
+
+
 (defn as-predicate-set [S] (if (set? S) (PredicateSet. S S) S))
 (defn as-explicit-set [S bound] (if (set? S) S (into #{} (hard-bounded-enumerate S bound))))
 
