@@ -38,11 +38,12 @@
 (defn show
   ([x] (show x (constantly true)))
   ([x selector] (let [c (if (class? x) x (class x))
+                      sc (.getSuperclass c)
                       members (sort-by :sort-val (map member-details (concat (.getFields c) (.getMethods c) (.getConstructors c))))]
                   (if (number? selector)
                     (:member (nth members selector))
                     (let [pred (if (ifn? selector)
                                  selector
                                  #(re-find (re-pattern (str "(?i)" selector)) (:name %)))]
-                      (println "=== " (Modifier/toString (.getModifiers c)) c " ===")
+                      (println "=== " (Modifier/toString (.getModifiers c)) c " (" sc ")" " ===")
                       (doseq [[i m] (indexed members)] (when (pred m) (printf "[%2d] %s\n" i (:text m)))))))))
