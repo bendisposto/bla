@@ -47,6 +47,8 @@
          ALessEqualPredicate                     <=                              2
   	 AGreaterEqualPredicate                  >=                              2
          ACoupleExpression                       bcouple                         2
+         ATrueExpression                         (constantly true)               0
+         AFalseExpression                        (constantly false)              0         
    	)                             
 
 (defmacro AImplicationPredicate [x y] `(ADisjunctPredicate (ANegationPredicate ~x) ~y))   

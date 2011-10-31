@@ -10,16 +10,21 @@
 
 (defn exp [x] (str "#EXPRESSION " x))
 (defn pred [x] (str "#PREDICATE " x))
+(defn ass [x] (str "#SUBSTITUTION" x))
 
-(defn- peel-from-monad [[result _]] result)
-(defn- compute [f t] (-> t f (run {}) peel-from-monad))
-
+(defn- compute [f t] (-> t f (run {}) first))
+(defn- compute-env [e t] (-> (ass t) (run e) second))
 
 (fact "lookup"
   (run (exp "a") {:a 3}) => [3 {:a 3}])
 
 (fact "lookup and add"
   (run (exp "1+a") {:a 3}) => [4 {:a 3}])
+
+(tabular "Arithmetic Assignments"
+         (fact (compute-env ?in ?a) => ?out)
+         ?in | ?a | ?out
+         {:x 0} |  "x := 1" | {:x 1})
 
 (tabular "True statements" 
          (fact (compute pred ?p) => truthy)
@@ -51,6 +56,10 @@
          "0 <= 4"
          "0 <= 0"
          "{1,2} <: {1,2}"
+         "TRUE = TRUE"
+         "FALSE = FALSE"
+         "bool( 1 = 1) = TRUE"
+         "bool(1=2) = FALSE"
          )
 
 (tabular "False statements" 
@@ -73,6 +82,8 @@
          "5 /: {4,5,6,7,1}"
          "55 <= 4"
          "3 >= 4"
+         "TRUE = FALSE"
+         "FALSE = TRUE"
          )
 
 (tabular "Not yet working Predicates"
@@ -158,7 +169,9 @@
         "{1,2,3,4} \\/ {}"                                       |      #{1,2,3,4}
         "{1,2,3,4} - {2,4}"                                      |      #{1,3}
         "{} - {1,2,3}"                                           |      #{}
-        "{1,2} - {}"                                             |      #{1,2}) 
+        "{1,2} - {}"                                             |      #{1,2}
+        "TRUE"                                                   |      true
+        "FALSE"                                                  |      false) 
 
 (def all (constantly true))
 
