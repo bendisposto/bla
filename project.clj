@@ -12,7 +12,8 @@
 		 [de.prob/parserbase "2.0.58"]               
 		 [de.prob/prologlib "2.0.58"]]
   :dev-dependencies [[swank-clojure "1.3.3"]
-                     [lein-midje "1.0.4"]]
+                     [lein-midje "1.0.4"]
+                     [lein-eclipse "1.0.0"]]
   :main b.interpreter)
 
 
