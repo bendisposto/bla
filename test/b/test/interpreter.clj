@@ -18,8 +18,12 @@
 (fact "lookup"
   (run (exp "a") {:a 3}) => [3 {:a 3}])
 
-(fact "lookup and add"
+(fact "lookup and add 1+a"
   (run (exp "1+a") {:a 3}) => [4 {:a 3}])
+
+(fact "lookup and add a+1"
+  (run (exp "a+1") {:a 13}) => [14 {:a 13}])
+
 
 (tabular "Arithmetic Assignments"
          (fact (compute-env ?in ?a) => ?out)
