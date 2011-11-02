@@ -28,15 +28,13 @@
 ;;we need to deal with undefined results (e.g., if we divide by zero.)
 (def wd-state-m (maybe-t state-m))
 
-;; To create monadic versions of regular functions we use the
-;; m-lift. it takes a function of the type a_1, a_2, ...
-;; --> b and lifts it to a monadic version of the type a_1, a_2
-;; ... --> m b. In the same step, we want to rename them to reflect
-;; the names of the syntax tree node used in the parser. For example,
-;; the clojure s-expression (+ a b) becomes something similar to (fn
-;; [env] [(+ (ma e) (mb e)) env]), where ma and mb are the monadic
-;; versions of a and b.  
-
+;; To create monadic versions of regular functions we use m-lift. It
+;; takes a function of the type a_1, a_2, ... --> b and lifts it to a
+;; monadic version of the type a_1, a_2 ... --> m b. In the same step,
+;; we want to rename them to reflect the names of the syntax tree node
+;; used in the parser. For example, the clojure s-expression (+ a b)
+;; becomes something similar to (fn [env] [(+ (ma e) (mb e)) env]),
+;; where ma and mb are the monadic versions of a and b.  
 (defmacro lift
   ([name op n] `(def ~name (with-monad wd-state-m (m-lift ~n ~op))))
   ([name op n & more] `(do (lift ~name ~op ~n) (lift ~@more))))
@@ -58,7 +56,8 @@
 ;; without wrapping it in the B bool function, but the parser will
 ;; prevent us from doing so.
 (skip alpha AExpressionParseUnit APredicateParseUnit Start AConvertBoolExpression)
-(declare bmod bdiv bminus bmult powerset notmember bmin bmax brange bcouple)
+
+(declare bmod bdiv bminus bmult powerset notmember bmin bmax brange)
 
 ;; Retrieving a variable from the state is handled by the fetch-val
 ;; function defined in the monads library.
@@ -75,33 +74,42 @@
 
 (defn ANatSetExpression [] (with-monad wd-state-m (m-result set/natural)))
 
-(lift                                                                       
-	 AAddExpression                          +                               2
-	 AModuloExpression                       bmod                            2
-	 ADivExpression                          bdiv                            2
-	 AConjunctPredicate                      #(and % %2)                     2
-	 ADisjunctPredicate                      #(or % %2)                      2
-	 ANegationPredicate                      #(not %)                        1
-	 AEqualPredicate                         =                               2
-	 AUnaryExpression                        (partial * -1)                  1 
-	 AEmptySetExpression                     (constantly #{})                0
-	 AUnionExpression                        set/union                       2        
-	 AIntersectionExpression                 set/intersection                2
-	 AMinusOrSetSubtractExpression           bminus                          2
-	 AMultOrCartExpression                   bmult                           2
-	 APowSubsetExpression                    powerset                        1
-	 ACardExpression                         count                           1
-         ANotBelongPredicate                     notmember                       2
-         AMinExpression                          bmin                            1
-         AMaxExpression                          bmax                            1
-         AIntervalExpression                     brange                          2
-         ALessEqualPredicate                     <=                              2
-  	 AGreaterEqualPredicate                  >=                              2
-         ACoupleExpression                       vector                          2
-         ATrueExpression                         (constantly true)               0
-         AFalseExpression                        (constantly false)              0         
-   	)                             
+;; # Lifting clojure functions
+;; A big part of the interpreter can be produced using the lift
+;; macro with matching clojure functions, such as +. In some cases, we
+;; need to write the clojure functions to reflect the B semantics, for
+;; instance, the * operator has to possible meanings (multiplication
+;; and cartesian product) depening on the type of the arguments. 
+(lift
+ AAddExpression                          +                               2
+ AModuloExpression                       bmod                            2
+ ADivExpression                          bdiv                            2
+ AConjunctPredicate                      #(and % %2)                     2
+ ADisjunctPredicate                      #(or % %2)                      2
+ ANegationPredicate                      not                             1
+ AEqualPredicate                         =                               2
+ AUnaryExpression                        (partial * -1)                  1
+ AEmptySetExpression                     (constantly #{})                0
+ AUnionExpression                        set/union                       2
+ AIntersectionExpression                 set/intersection                2
+ AMinusOrSetSubtractExpression           bminus                          2
+ AMultOrCartExpression                   bmult                           2
+ APowSubsetExpression                    powerset                        1
+ ACardExpression                         count                           1
+ ANotBelongPredicate                     notmember                       2
+ AMinExpression                          bmin                            1
+ AMaxExpression                          bmax                            1
+ AIntervalExpression                     brange                          2
+ ALessEqualPredicate                     <=                              2
+ AGreaterEqualPredicate                  >=                              2
+ ACoupleExpression                       vector                          2
+ ATrueExpression                         (constantly true)               0
+ AFalseExpression                        (constantly false)              0)                             
 
+;;# Rewritings
+;;In some cases it is easier to rewrite a given AST node in terms of
+;;other nodes. If we already have logical or and negation, we can
+;;rewrite implication in terms of these junctors.
 (defmacro AImplicationPredicate [x y] `(ADisjunctPredicate (ANegationPredicate ~x) ~y))   
 (defmacro AEquivalencePredicate [x y] `(AConjunctPredicate (AImplicationPredicate ~x ~y) (AImplicationPredicate ~y ~x)))
 (defmacro AUnequalPredicate [x y] `(ANegationPredicate (AEqualPredicate ~x ~y)))
@@ -112,20 +120,20 @@
 (defmacro ALessPredicate [A B] `(ANegationPredicate (AGreaterEqualPredicate ~A ~B)))
 (defmacro AGreaterPredicate [A B] `(ANegationPredicate (ALessEqualPredicate ~A ~B)))
 (defmacro AIncludePredicate [A B] `(ABelongPredicate ~A (APowSubsetExpression ~B)))
+(defmacro AIncludeStrictlyPredicate [A B] `(AConjunctPredicate (AIncludePredicate ~A ~B) (AUnequalPredicate ~A ~B)))
+(defmacro ANotIncludePredicate [A B] `(ANegationPredicate (AIncludePredicate ~A ~B)))
+(defmacro ANotIncludeStrictlyPredicate [A B] `(ANegationPredicate (AIncludeStrictlyPredicate ~A ~B)))
 
-;(defmacro AIncludeStrictlyPredicate [A B] `(AConjunctPredicate (AIncludePredicate ~A ~B) (AUnequalPredicate ~A ~B)))
-;(defmacro ANotIncludePredicate [A B] `(ANegationPredicate (AIncludePredicate ~A ~B)))
-;(defmacro ANotIncludeStrictlyPredicate [A B] `(ANegationPredicate (AIncludeStrictlyPredicate ~A ~B)))
+;; ## The main functions
 
-; ------------           MAIN           ------------           
-
-(defn evaluate [env [ast types]] ;(println "evaluate " ast "in" env) 
-                   ((eval ast) env))
+(defn evaluate [env [ast types]] ((eval ast) env))
 (defn run [text, env]  (->> text reader/parse type/typecheck (evaluate env)))
 (defn -main[ arg]
     (println (run arg {}))) 
 
-; ------------           HELPER           ------------ 
+;; ## The helper functions
+;; In many cases we can simply lift an existing clojure function, but
+;; sometimes we need to write functions to conform to the B semantics.
 
 ;; The B definition of modulo is rather strange. a mod b is only
 ;; defined, if a is a natural number and b is a natural number that is
