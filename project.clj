@@ -14,6 +14,7 @@
   :dev-dependencies [[swank-clojure "1.3.3"]
                      [lein-midje "1.0.4"]
                      [lein-eclipse "1.0.0"]
+                     [marginalia "0.7.0-SNAPSHOT"]
                      [lein-marginalia "0.6.1"]]
   :marginalia {:javascript ["http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"]}
   :main b.interpreter)
