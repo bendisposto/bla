@@ -24,9 +24,8 @@
 (fact "lookup and add a+1"
   (run (exp "a+1") {:a 13}) => [14 {:a 13}])
 
-
 (tabular "Arithmetic Assignments"
-         (fact (compute-env ?in ?a) => ?out)
+         (fact (compute-env ?in ?a) =future=> ?out)
          ?in | ?a | ?out
          {:x 0} |  "x := 1" | {:x 1})
 
