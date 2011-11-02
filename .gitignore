@@ -6,3 +6,6 @@ pom.xml
 .lein-deps-sum
 .DS_Store
 .cake/
+.classpath
+.project
+.settings/ccw.repl.cmdhistory.prefs
