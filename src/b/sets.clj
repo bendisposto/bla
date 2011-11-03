@@ -3,6 +3,17 @@
   (:use clojure.algo.monads)
   (:gen-class))
 
+;; # Sets vs. Types
+;; The SETS clause in B defines types rather than sets. A type is a
+;; set that is by definition not empty and disjoint from any other
+;; type. Therefore it is not possible to define a type that is a
+;; subset of another type. For instance, INTEGER is actually a type,
+;; while NATURAL is a set. We will use consequently type when we
+;; refer to the SETS clause and the built-in types INTEGER and BOOL.
+;; Opposed to types a set is a collection of elements of a certain
+;; type. For instance, {1,9,-3} is a set of type INTEGER.  
+
+
 (defprotocol B-Type
   (finite? [this])
   (elements [this]))
