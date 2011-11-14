@@ -114,7 +114,7 @@
 ;; finite if one of the original sets was finite. Note again, that
 ;; we don't always know that a set is finite. For instance the two
 ;; sets S = {x| x:Z &  x < 4} and T = {x| x:Z & x>2} are both not
-;; finite. The intersection S /\ T = {3} is clearly finite but the
+;; finite. The intersection \\(S \cap T\\) = {3} is clearly finite but the
 ;; combiner will say it is not finite. 
 (def union (set-operation set/union (fn [S1 S2] #(or (member? S1 %) (member? S2 %))) #(and %1 %2) ))
 (def intersection (set-operation set/intersection (fn [S1 S2] #(and (member? S1 %) (member? S2 %))) #(or %1 %2) ))
@@ -146,7 +146,8 @@
 ;; Cantor has proven that for all sets S the powerset is larger than
 ;; S. Thus the powerset of the integers is uncountable and we cannot
 ;; it. However, we can enumerate all finite elements of the powerset
-;; as proposed in the paper on eboc (TODO add reference ICFEM'09).
+;; as proposed in the paper on eboc (Paulo Matos and Bernd Fischer. A
+;; Lazy Unbounded Model Checker for Event-B, ICFEM'09).
 ;; We use a different enumeration scheme than the one used in the
 ;; paper. Our schema starts with n counting down to 1 and repeates
 ;; each number i 2^(n-i+1) times. For instance the sequence for n=3
@@ -169,6 +170,10 @@
 (defn- p [e state] (let [[c & cs] (:cards state) g (get_generator state c e)] [(first g)  (assoc (assoc state c (rest g)) :cards cs)]))
 
 (def nat-pow (cons [] (gen (partial p (iterate inc 0)) {:cards card-sequence})))
+
+;; TODO We need to find bijections from nat to the actual sets, maybe
+;; we could even always use nat as the underlying type and specify a
+;; function to map from nat to domain elements.
 
 (defn as-predicate-set [S] (if (set? S) (PredicateSet. S S) S))
 (defn as-explicit-set [S bound] (if (set? S) S (into #{} (hard-bounded-enumerate S bound))))
