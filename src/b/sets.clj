@@ -76,17 +76,18 @@
 ;; decider, i.e., the decider function is similar to (fn [x] (<= 0 x))
 (def natural (PredicateSet. int-type (partial <= 0)))
 
-;; When we do operation on sets (union, interdection, ...) we need to
-;; think about how the types are combined.
-;; TODO Describe how types are combined
-(defn combine_types [T1 T2 FC]
+;; When we do operations on sets (union, interdection, ...) we need to
+;; combine the types. 
+;; TODO The abstract interpretaion should figure this out and replace
+;; this (compliicated) function
+(defn combine_types  [T1 T2 FC]
   (let [fin1 (finite? T1)
         fin2 (finite? T2)
         finite (FC fin1 fin2)
         etype (if fin1 T2 T1)]
     (if finite
       (reify B-Type
-        (finite? [_] (FC fin1 fin2))
+        (finite? [_] true)
         (elements [_] (elements etype)))
       etype)))
 
