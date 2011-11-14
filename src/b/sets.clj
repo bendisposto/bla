@@ -154,8 +154,7 @@
 ;; will be 3, 2, 2, 1, 1, 1, 1. The sequence then statrs over with
 ;; n+1. This yields in a sequence where a number n occurs about twice
 ;; as often as (n+1).   
-(defn- rrange [a b] (take (- a b) (iterate dec a)))
-(defn- pow-seq [n] (apply concat (map-indexed (fn [i v] (repeat (int (Math/pow 2 i)) v)) (rrange n 0))))
+(defn- pow-seq [n] (apply concat (map-indexed (fn [i v] (repeat (int (Math/pow 2 i)) v)) (range n 0 -1))))
 (def card-sequence (mapcat pow-seq (iterate inc 1)))
 
 (defn- mk_set_generator [n e]
