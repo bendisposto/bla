@@ -131,9 +131,15 @@
 (defn bounded-enumerate [S predicate hard-bound] (into #{} (filter predicate (hard-bounded-enumerate S hard-bound))))
 
 
-(defn type-product [T1 T2] (for [x T1 y T1] [x y])) ;TODO diagonalization
+;(defn type-product [T1 T2] (for [x T1 y T1] [x y])) ;TODO diagonalization
+
+(defn type-product [T1 T2] (for [x T1 y T2 :when y < x] [x y]))
+(defn diagonalize [E] (for [v E f (take (inc v) E)] [f (- v f)]))
+(def d-nat-nat (diagonalize (iterate inc 0)))
 
 (defn cartesian-product [S, T] (PredicateSet. (type-product (enum-type S) (enum-type T)) (fn [[x y]] (and (member? S x) (member? T y)))))
+
+
 
 (defn card [S]  (count (enumerate S)))
 
