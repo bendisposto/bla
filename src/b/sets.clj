@@ -103,8 +103,8 @@
        (~operation S1# S2#)
        (PredicateSet. (combine_types (enum-type S1#) (enum-type S2#) ~f_combine) (~l_combine S1# S2#)))))
 
-;; The set operations can be defined using the set-operation marco, we
-;; pass a clojure function that deald with the case that both sets are
+;; The set operations can be defined using the set-operation macro, we
+;; pass a clojure function that deals with the case that both sets are
 ;; clojure sets, a function that combines the deciders and a function
 ;; that combines the finiteness of the type enumerators. For instance,
 ;; the intersection of two sets combines the deciders using logical
@@ -131,35 +131,35 @@
 (defn bounded-enumerate [S predicate hard-bound] (into #{} (filter predicate (hard-bounded-enumerate S hard-bound))))
 
 
-;(defn type-product [T1 T2] (for [x T1 y T1] [x y])) ;TODO diagonalization
-
 (defn type-product [T1 T2] (for [x T1 y T2 :when y < x] [x y]))
 (defn diagonalize [E] (for [v E f (take (inc v) E)] [f (- v f)]))
 (def d-nat-nat (diagonalize (iterate inc 0)))
 
 (defn cartesian-product [S, T] (PredicateSet. (type-product (enum-type S) (enum-type T)) (fn [[x y]] (and (member? S x) (member? T y)))))
 
-
-
 (defn card [S]  (count (enumerate S)))
 
-;(defn pow [S]
-;(B-Set.
-; (type-pow S)
-; (fn [e] (every? (partial member? S) (elements e)))))
+
 
 ;; ## Enumerating powersets
 ;; Cantor has proven that for all sets S the powerset is larger than
-;; S. Thus the powerset of the integers is uncountable and we cannot
-;; it. However, we can enumerate all finite elements of the powerset
+;; S. Thus the powerset of the integers is uncountable and we cannot 
+;; enumerate it. 
+;; However, we can enumerate all finite elements of the powerset
 ;; as proposed in the paper on eboc (Paulo Matos and Bernd Fischer. A
 ;; Lazy Unbounded Model Checker for Event-B, ICFEM'09).
 ;; We use a different enumeration scheme than the one used in the
-;; paper. Our schema starts with n counting down to 1 and repeates
-;; each number i 2^(n-i+1) times. For instance the sequence for n=3
-;; will be 3, 2, 2, 1, 1, 1, 1. The sequence then statrs over with
+;; paper. Our schema starts with n counting down to 1 and each number i is repeated
+;; \\(2^{(n-i+1)}\\) times. For instance the sequence for n=3
+;; will be 3, 2, 2, 1, 1, 1, 1. The sequence then starts over with
 ;; n+1. This yields in a sequence where a number n occurs about twice
 ;; as often as (n+1).   
+;; The first elements of the sequence are: <br>
+;; 1 <br>
+;; 2 1 1 <br>
+;; 3 2 2 1 1 1 1 <br>
+;; 4 3 3 2 2 2 2 1 1 1 1 1 1 1 1 <br>
+;; 5 4 4 3 3 3 3 ...<br>
 (defn- pow-seq [n] (apply concat (map-indexed (fn [i v] (repeat (int (Math/pow 2 i)) v)) (range n 0 -1))))
 (def card-sequence (mapcat pow-seq (iterate inc 1)))
 
