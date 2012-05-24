@@ -4,15 +4,15 @@
   (:gen-class))
 
 ;; # Sets vs. Types
-;; The SETS clause in B defines types rather than sets. A type is a
+;; The SETS clause in B defines types rather than just sets. A type is a
 ;; set that is by definition not empty and disjoint from any other
 ;; type. Therefore it is not possible to define a type that is a
-;; subset of another type. For instance, INTEGER is actually a type,
+;; subset of another type. For instance, INTEGER is a type 
 ;; while NATURAL is a set. We will use consequently type when we
 ;; refer to the SETS clause and the built-in types INTEGER and BOOL.
 ;; Opposed to types a set is a collection of elements of a certain
 ;; type. For instance, {1,9,-3} is a set of type INTEGER.  
-;; Consequently we use two Protocols, one for types and one for sets.
+;; We use two Protocols, one for types and one for sets.
 
 ;; The type protocol has two functions. finite? and elements. finite?
 ;; returns true if we know for sure that the set is finite and false
@@ -60,7 +60,8 @@
 ;; Clojure sets can be used as both, types and sets. Because clojure
 ;; sets are actually functions that return truthy values if the
 ;; argument is element of the set, we can use the set itself as
-;; the decider predicate.  
+;; the decider predicate. We use Clojure sets only if they are finite
+;; thus they can also implement the BType Protocol.
 (extend-type clojure.lang.PersistentHashSet
   B-Type
   (finite? [_] true)
@@ -79,7 +80,7 @@
 ;; When we do operations on sets (union, interdection, ...) we need to
 ;; combine the types. 
 ;; TODO The abstract interpretaion should figure this out and replace
-;; this (compliicated) function
+;; this (too complicated) function
 (defn combine_types  [T1 T2 FC]
   (let [fin1 (finite? T1)
         fin2 (finite? T2)
@@ -93,7 +94,7 @@
 
 (defn int-range [minv,maxv] (fn [x] (<= minv x maxv)))
 
-;; When we define operations on sets, we want to make sure, that if we
+;; When we define operations on sets we want to make sure that if we
 ;; have two clojure sets the result is a clojure set. Otherwise we
 ;; construct the symbolic representation (PredicateSet).  
 (defmacro set-operation
@@ -106,26 +107,30 @@
 ;; The set operations can be defined using the set-operation macro, we
 ;; pass a clojure function that deals with the case that both sets are
 ;; clojure sets, a function that combines the deciders and a function
-;; that combines the finiteness of the type enumerators. For instance,
+;; that combines the finiteness info of the type enumerators. For instance,
 ;; the intersection of two sets combines the deciders using logical
-;; and, i.e., an eement of the intersection of the sets S and T must
-;; ben member of S and member of T. Regarding finiteness, we use
-;; logical or as the combining function because the resulting set is
-;; finite if one of the original sets was finite. Note again, that
+;; and, i.e., an element of the intersection of the sets S and T must
+;; be a member of S and a member of T. Regarding finiteness, we use
+;; logical or as the combining function because the intersection is
+;; finite if at least one of the original sets is finite. Note again, that
 ;; we don't always know that a set is finite. For instance the two
 ;; sets S = {x| x:Z &  x < 4} and T = {x| x:Z & x>2} are both not
 ;; finite. The intersection \\(S \cap T\\) = {3} is clearly finite but the
 ;; combiner will say it is not finite. 
+;; TODO Here it might be handy to have abstract interpretation. Maybe we 
+;; can get more precise information
+
 (def union (set-operation set/union (fn [S1 S2] #(or (member? S1 %) (member? S2 %))) #(and %1 %2) ))
 (def intersection (set-operation set/intersection (fn [S1 S2] #(and (member? S1 %) (member? S2 %))) #(or %1 %2) ))
 (def difference (set-operation set/difference (fn [S1 S2] #(and (member? S1 %) (not (member? S2 %)))) (fn [a _] a)))
 
-;;When we have to enumerate (i.e., turn a symbolic set into a cloure
-;;set) we need to be very careful. If the type of the set is inifinite
-;;we get into an inifinite loop when we use the enumerate
-;;function. The hard-bounded-enumerate function can be safely used to
-;;enumerate a set (but of course it will restrict sets to finite sets
-;;and therefore it might miss cases)  
+;; When we have to enumerate (i.e., turn a symbolic set into a cloure
+;; set) we need to be very careful. If the type of the set is inifinite
+;; we get into an inifinite loop when we use the enumerate
+;; function. The hard-bounded-enumerate function can be safely used to
+;; enumerate a set (but of course it will restrict sets to finite sets
+;; and therefore it might miss cases)  
+
 (defn enumerate [S] (into #{} (filter (decider S) (elements (enum-type S)))))
 (defn hard-bounded-enumerate [S hard-bound] (into #{} (filter (decider S) (take hard-bound (elements (enum-type S))))))
 (defn bounded-enumerate [S predicate hard-bound] (into #{} (filter predicate (hard-bounded-enumerate S hard-bound))))
@@ -178,7 +183,7 @@
 
 ;; TODO We need to find bijections from nat to the actual sets, maybe
 ;; we could even always use nat as the underlying type and specify a
-;; function to map from nat to domain elements.
+;; function to map from nat to domain elements (in theory we can).
 
 (defn as-predicate-set [S] (if (set? S) (PredicateSet. S S) S))
 (defn as-explicit-set [S bound] (if (set? S) S (into #{} (hard-bounded-enumerate S bound))))
