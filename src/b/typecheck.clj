@@ -2,36 +2,37 @@
   (:refer-clojure :exclude [==])
   (:use clojure.core.logic)) 
 
-;; ## The typechecker
-;; In Prolog we would use something like 
-;; store(Var,Type,EIn,EIn) :- member(type(Var,Type),EIn), !.
-;; store(Var,Type,EIn,type_error) :- member(type(Var,Type2),EIn),Type \= Type2,!.
-;; store(Var,Type,E,[type(Var,Type)|E]).
-;; 
-;; tc(int(X),int,E,E) :- number(X),!.
-;; tc(id(A),T,I,O) :- store(A,T,I,O),!.
-;; 
-;; tc(plus(L,R),int,In,Out) :- tc(L,int,In,Out1),tc(R,int,Out1,Out),!.
-;; tc(elementof(E,S),bool,In,Out) :- tc(E,TE,In,Out1), tc(S,set(TE),Out1,Out),!.
-;; tc(equals(A,B),bool,In,Out) :- tc(A,T,In,Out1), tc(B,T,Out1,Out),!.
-;; tc(and(A,B),bool,In,Out) :- tc(A,bool,In,Out1), tc(B,bool,Out1,Out),!.
-;; 
-;; test1(X) :- tc(elementof(plus(int(1),id(x)),id(s)),_,[],X).
-;; test2(X) :- tc(elementof(id(x),id(s)),_,[],X).
-;; test3(X) :- tc(and(equals(id(x),id(s)), equals(id(s),int(5))),_,[],X). 
+(defmacro rule [n vars t1 t2 rt]
+  `(defn ~n [a# b#]
+     (fn [t# in# out#]
+       (fresh [btw#]
+              (fresh ~vars
+                     (a# ~t1 in# btw#)
+                     (b# ~t2 btw# out#)
+                     (== t# ~rt))))))
+
+(defmacro rules
+  ([n v a b c & more] `(do (rule ~n ~v ~a ~b ~c) (rules ~@more)))
+  ([n v a b c] `(rule ~n ~v ~a ~b ~c)))
 
 
+(rules
+ ;name              type variables   left type   right type   result type
+ ABelongPredicate   [t]              t           [:set t]     [:bool]
+ AIncludesPredicate [t]              [:set t]    [:set t]     [:bool]
+ AAddExpression     []               [:int]      [:int]       [:int]
+ )
 
+(defn AIntegerExpression [_] (fn [type in out] (all (== type [:int]) (== in out))))
+(defn AIdentifierExpression [id] (fn [type in out] (appendo in [[id type]] out)))
+(defn ANatSetExpression [] (fn [type in out] (all (== type [:set [:int]]) (== in out))))
 
+(defn typecheck [ast] (let [res (first (run* [q] (fresh [t,o] (ast t [] q))))] (into {} res)))
 
-
-
-
-
-
-
-
-
+(defn t1 [] (run* [q] (fresh [t,o] ((AAddExpression (AIntegerExpression 4) (AIdentifierExpression :x)) t [] o) (== q {:type t, :env o}))))
+(defn t2 [] (typecheck (AAddExpression (AIntegerExpression 4) (AIdentifierExpression :x))))
+(defn t3 [] (typecheck (ABelongPredicate (AIdentifierExpression :x) (ANatSetExpression))))
+(defn t4 [] (typecheck (ABelongPredicate (AIdentifierExpression :e) (AIdentifierExpression :S))))
 
 
 
