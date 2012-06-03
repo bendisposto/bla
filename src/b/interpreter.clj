@@ -132,9 +132,9 @@
 (defmacro ALessPredicate [A B] `(ANegationPredicate (AGreaterEqualPredicate ~A ~B)))
 (defmacro AGreaterPredicate [A B] `(ANegationPredicate (ALessEqualPredicate ~A ~B)))
 (defmacro ASubsetPredicate [A B] `(AMemberPredicate ~A (APowSubsetExpression ~B)))
-(defmacro ASubsetStrictlyPredicate [A B] `(AConjunctPredicate (ASubsetPredicate ~A ~B) (ANotEqualPredicate ~A ~B)))
+(defmacro ASubsetStrictPredicate [A B] `(AConjunctPredicate (ASubsetPredicate ~A ~B) (ANotEqualPredicate ~A ~B)))
 (defmacro ANotSubsetPredicate [A B] `(ANegationPredicate (ASubsetPredicate ~A ~B)))
-(defmacro ANotSubsetStrictlyPredicate [A B] `(ANegationPredicate (ASubsetStrictlyPredicate ~A ~B)))
+(defmacro ANotSubsetStrictPredicate [A B] `(ANegationPredicate (ASubsetStrictPredicate ~A ~B)))
 
 
 
