@@ -79,7 +79,7 @@
  ADisjunctPredicate                      #(or % %2)                      2
  ANegationPredicate                      not                             1
  AEqualPredicate                         =                               2
- AUnaryExpression                        (partial * -1)                  1
+ AUnaryMinusExpression                   (partial * -1)                  1
  AEmptySetExpression                     (constantly #{})                0
  AUnionExpression                        set/union                       2
  AIntersectionExpression                 set/intersection                2
@@ -87,15 +87,15 @@
  AMultOrCartExpression                   bmult                           2
  APowSubsetExpression                    powerset                        1
  ACardExpression                         count                           1
- ANotBelongPredicate                     notmember                       2
+ ANotMemberPredicate                     notmember                       2
  AMinExpression                          bmin                            1
  AMaxExpression                          bmax                            1
  AIntervalExpression                     brange                          2
  ALessEqualPredicate                     <=                              2
  AGreaterEqualPredicate                  >=                              2
  ACoupleExpression                       vector                          2
- ATrueExpression                         (constantly true)               0
- AFalseExpression                        (constantly false)              0)                             
+ ABooleanTrueExpression                  (constantly true)               0
+ ABooleanFalseExpression                 (constantly false)              0)                             
 
 ;; Several nodes in the AST should be ignored, because they are
 ;; irrelevant for evaluating an expression or predicate. For instance
@@ -124,17 +124,17 @@
 ;;rewrite implication in terms of these junctors.
 (defmacro AImplicationPredicate [x y] `(ADisjunctPredicate (ANegationPredicate ~x) ~y))   
 (defmacro AEquivalencePredicate [x y] `(AConjunctPredicate (AImplicationPredicate ~x ~y) (AImplicationPredicate ~y ~x)))
-(defmacro AUnequalPredicate [x y] `(ANegationPredicate (AEqualPredicate ~x ~y)))
+(defmacro ANotEqualPredicate [x y] `(ANegationPredicate (AEqualPredicate ~x ~y)))
 (defmacro APow1SubsetExpression [x] `(AMinusOrSetSubtractExpression (APowSubsetExpression ~x) (APowSubsetExpression (AEmptySetExpression))))
 (defmacro AFinSubsetExpression [x] `(APowSubsetExpression ~x))
 (defmacro AFin1SubsetExpression [x] `(APow1SubsetExpression ~x))
-(defmacro ABelongPredicate [A B] `(ANegationPredicate (ANotBelongPredicate ~A ~B)))
+(defmacro AMemberPredicate [A B] `(ANegationPredicate (ANotMemberPredicate ~A ~B)))
 (defmacro ALessPredicate [A B] `(ANegationPredicate (AGreaterEqualPredicate ~A ~B)))
 (defmacro AGreaterPredicate [A B] `(ANegationPredicate (ALessEqualPredicate ~A ~B)))
-(defmacro AIncludePredicate [A B] `(ABelongPredicate ~A (APowSubsetExpression ~B)))
-(defmacro AIncludeStrictlyPredicate [A B] `(AConjunctPredicate (AIncludePredicate ~A ~B) (AUnequalPredicate ~A ~B)))
-(defmacro ANotIncludePredicate [A B] `(ANegationPredicate (AIncludePredicate ~A ~B)))
-(defmacro ANotIncludeStrictlyPredicate [A B] `(ANegationPredicate (AIncludeStrictlyPredicate ~A ~B)))
+(defmacro ASubsetPredicate [A B] `(AMemberPredicate ~A (APowSubsetExpression ~B)))
+(defmacro ASubsetStrictlyPredicate [A B] `(AConjunctPredicate (ASubsetPredicate ~A ~B) (ANotEqualPredicate ~A ~B)))
+(defmacro ANotSubsetPredicate [A B] `(ANegationPredicate (ASubsetPredicate ~A ~B)))
+(defmacro ANotSubsetStrictlyPredicate [A B] `(ANegationPredicate (ASubsetStrictlyPredicate ~A ~B)))
 
 
 
