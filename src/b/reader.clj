@@ -12,7 +12,7 @@
 (defn mk_clojure_ast [start]
   (let [sb (StringBuffer.) 
         visitor (proxy [DepthFirstAdapter] []
-                  (defaultIn [n] (doto sb (.append "(") (.append (.. n (getClass) (getSimpleName)))))
+                  (defaultIn [n] (doto sb (.append "(") (.append (.. n (getClass) (getSimpleName))) (.append " ")))
                   (defaultOut [n] (.append sb ")"))
                   (caseAIntegerExpression [n] (doto sb 
                                                 (.append "(AIntegerExpression  ") 
