@@ -77,7 +77,7 @@
 ;.;.     The checker said this about the reason:
 ;.;.         Expected four elements. There was one.
 (tabular "comprehension sets"
-         (fact (tc ?text) => (just ?out))
+         (fact (tc ?text) =future=> (just ?out))
          ?text | ?out
          "a = {x,y,z|x:NAT & y:NAT & z:NAT & x = y + z}" | {:a (btuple (bint) (bint) (bint)) :x (bint) :y (bint) :z (bint) })
 
@@ -169,6 +169,7 @@
          "1" | {})
 	
 (fact (tc "x*y : INTEGER") => (just {:x (bint) :y (bint) })) 	
+(fact (tc "x*y : S*T") => (just {:x '_.0 :y '_.1 :S (bset '_.0) :T (bset '_.1) })) 
 
 (tabular "tuple"
          (fact (apply btuple ?t) => ?r)
