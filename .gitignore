@@ -10,3 +10,4 @@ pom.xml
 .project
 .settings/ccw.repl.cmdhistory.prefs
 docs/uberdoc.html
+target/
