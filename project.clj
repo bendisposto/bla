@@ -13,6 +13,9 @@
                      [lein-eclipse "1.0.0"]
                      [marginalia "0.7.0"]
                      [lein-marginalia "0.6.1"]]
+  :profiles {:dev {:dependencies [[midje "1.3.2-SNAPSHOT"]] :plugins [[lein-midje "2.0.0-SNAPSHOT"]]}}
+
+
   :marginalia {:javascript ["http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"]}
   :main b.interpreter)
 
