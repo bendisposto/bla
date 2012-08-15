@@ -8,11 +8,11 @@
 (defn tc [text] (->> text formulize reader/parse typecheck))
 (defn dg [f] (->> f formulize reader/bparser reader/mk_clojure_ast))
 
-;.;. The highest reward for a man's toil is not what he gets for it but
-;.;. what he becomes by it. -- Ruskin
+
 (tabular "basic-rules"
          (fact (tc ?text) => (just ?out))
          ?text | ?out
+         "5" | {}
          "c : STRING" | {:c (bstring)} 
          "1 : NAT" | {}
          "x <: NAT" | {:x (bset (bint))}
@@ -38,14 +38,107 @@
          "x = {1,2} <| NAT * NAT" | {:x (brel (bint) (bint))}
          "x =  NAT * NAT |> {4}" | {:x (brel (bint) (bint))}
          "{1|->2}" | {}
-         "x : {1|->2, 3|->5}" | {:x (bpair (bint) (bint))}
+         "x : {1|->2, 3|->5}" | {:x (btuple (bint) (bint))}
          "x = {1|->1, 2|->3} <+ {a|->b}" | {:x (brel (bint) (bint)) :a (bint) :b (bint)}
          "x = BOOL <-> INT" | {:x (brel (bbool) (bint))}
          "x = id(y)[z]" | {:z (bset '_.0) :x  (bset '_.0) :y (bset '_.0)}
          "x = closure({1|->2,2|->4})"  | {:x (brel (bint) (bint))}
          "x = iterate({1|->2,2|->4},12)"  | {:x (brel (bint) (bint))}
+         "a = (b;c) & dom(b) = BOOL & ran(c) = INT" | {:a (brel (bbool) (bint)) :b (brel (bbool) '_.0) :c (brel '_.0 (bint))}
+         "x : seq(y)" | {:y (bset '_.0) :x (bseq '_.0)}
+         "x = succ(4)" | {:x (bint)}
+         "y = first(x)" | {:x (bseq '_.0) :y '_.0}
+         "y = front(x)" | {:x (bseq '_.0) :y (bseq '_.0)}
+         "x = y ^ y" | {:x (bseq '_.0) :y (bseq '_.0)}
+         "x = (NAT * BOOL)~" | {:x (brel (bbool) (bint))}
+         "x = TRUE" | {:x (bbool)}
+         "y = 4 -> x  & x : seq(NAT)" | {:x (bseq (bint)) :y (bseq (bint))}
+         "y = x <- 2  & x : seq(NAT)" | {:x (bseq (bint)) :y (bseq (bint))}
+         "a = r \\|/ n" | {:a (bseq '_.0)  :r (bseq '_.0) :n (bint) }
+         "e=[]" | {:e (bseq '_.0)} 
+         "e={}" | {:e (bset '_.0)}
+         "e = {1|->3} & f = e~" {:e (brel (bint) (bint)) :f (brel (bint) (bint))}
          
          )
+
+
+;.;. FAIL at (NO_SOURCE_FILE:1)
+;.;. With table substitutions: {?text "a = {x,y,z|x:NAT & y:NAT & z:NAT & x = y + z}", ?out {:a (btuple (bint) (bint) (bint)), :x (bint), :y (bint), :z (bint)}}
+;.;. Actual result did not agree with the checking function.
+;.;.         Actual result: java.lang.IllegalArgumentException: Don't know how to create ISeq from: clojure.core.logic.LVar
+;.;.               b.typecheck$RComprehensionSetExpression$fn__26562$fn__26565$_inc__26566.invoke(typecheck.clj:181)
+;.;.               b.typecheck$typecheck.invoke(typecheck.clj:195)
+;.;.               b.test.typecheck$tc.invoke(typecheck.clj:8)
+;.;.               b.test.typecheck$eval26614$fn__26615$fn__26616.invoke(NO_SOURCE_FILE:1)
+;.;.               b.test.typecheck$eval26614$fn__26615.invoke(NO_SOURCE_FILE:1)
+;.;.               b.test.typecheck$eval26614.invoke(NO_SOURCE_FILE:1)
+;.;.               b.test.typecheck$eval26610.invoke(NO_SOURCE_FILE)
+;.;.     Checking function: (just {:a (btuple (bint) (bint) (bint)), :x (bint), :y (bint), :z (bint)})
+;.;.     The checker said this about the reason:
+;.;.         Expected four elements. There was one.
+(tabular "comprehension sets"
+         (fact (tc ?text) => (just ?out))
+         ?text | ?out
+         "a = {x,y,z|x:NAT & y:NAT & z:NAT & x = y + z}" | {:a (btuple (bint) (bint) (bint)) :x (bint) :y (bint) :z (bint) })
+
+(tabular "analog"
+         (fact (tc ?a) => (just (tc ?b)))
+         ?a | ?b
+         "a = NAT" | "a=INT"
+         "a=INT" | "a=NAT1"
+         "a=NAT" | "a=NATURAL"
+         "a=INT" | "a=INTEGER"
+         "e = 6" | "e=MAXINT"
+         "e=MAXINT" | "e=MININT"
+         "f:a --> b" | "f:a <-> b"
+         "f:a +-> b" | "f:a --> b"
+         "e=TRUE" | "e=FALSE"
+         "r /|\\ 4" | "r \\|/ 7"
+         "12" | "-4"
+         "{1,2,3} <| r" | "{4} <<| r"
+         "r <| s" | "r <<|s"
+         "1<c & a<b" | "1<c or a<b"
+         "1<c & a<b" | "1<c => a<b"
+         "1<c & a<b" | "1<c <=> a<b"
+         "a + 1" | "a - 1"
+         "a + b" | "a / b"
+         "a + b" | "a mod b"
+         "a + b" | "a ** b"
+         "a < b" | "a <= b"
+         "a < b" | "a > b"
+         "a < b" | "a >= b"
+         "a <: b" | "a <<: b"
+         "a <: b" | "a /<: b"
+         "a <: b" | "a /<<: b"
+         "a = b" | "a /= b"
+         "a : S" | "a /: S"
+         "a \\/ b" | "a /\\ b"
+         "a \\/ {1,2}" | "a - {1,2}"
+         "a \\/ b" | "a \\ b"
+         "e :POW(S)" | "e : POW1(S)"
+         "e :POW(S)" | "e : FIN1(S)"
+         "e :POW(S)" | "e : FIN(S)"
+         "x = max(S)" | "x = min(S)"
+         "f : A <-> B" | "f : A +-> B"
+         "f : A <-> B" | "f : A --> B"
+         "f : A <-> B" | "f : A +->> B"
+         "f : A <-> B" | "f : A -->> B"
+         "f : A <-> B" | "f : A >-> B"
+         "f : A <-> B" | "f : A >+> B"
+         "f : A <-> B" | "f : A >->> B"
+         "x : closure(S)" | "x : closure1(S)"
+         "s : seq(T)" | "s: seq1(T)"
+         "s : seq(T)" | "s: iseq(T)"
+         "s : seq(T)" | "s: iseq1(T)"
+         "s : seq(T)" | "s: perm(T)"
+         "x = succ(9)" | "x = pred(3)"
+         "m = card(T)" | "m = size(T)"
+         "e = first(S)" | "e = last(S)"
+         "x = front(S)" | "x = tail(S)"
+         "x = front(S)" | "x = rev(S)"
+         )
+
+(fact    (tc "a = [1,2,3,4]") =future=> (just {:a (bseq (bint))}))
 
 (tabular "composed-rules"
          (fact (tc ?text) => (just ?out))
@@ -71,11 +164,18 @@
          
 
          "x = min(y)" | {:x (bint) :y (bset (bint))}
-       
+         "a = r /|\\ n" | {:a (bseq '_.0)  :r (bseq '_.0) :n (bint) }       
          "x = NAT * NAT" | {:x (brel (bint) (bint))}
          "1" | {})
+	
+(fact (tc "x*y : INTEGER") => (just {:x (bint) :y (bint) })) 	
 
-
+(tabular "tuple"
+         (fact (apply btuple ?t) => ?r)
+         ?t | ?r
+         [1 2] | [:pair 1 2]
+         [1 2 3]  | [:pair 1 [:pair 2 3]]
+         [1 2 3 4] | [:pair 1 [:pair 2 [:pair 3 4]]])
 
 
 
