@@ -30,7 +30,7 @@
 
 ;; To create monadic versions of regular functions we use m-lift. It
 ;; takes a function of the type a_1, a_2, ... --> b and lifts it to a
-;; monadic version of the type a_1, a_2 ... --> m b. In the same step,
+;; monadic version of the type m a_1, m a_2 ... --> m b. In the same step,
 ;; we want to rename them to reflect the names of the syntax tree node
 ;; used in the parser. For example, lifting the integer addition is done 
 ;; by lifting the clojure + function, i.e., 
@@ -152,7 +152,7 @@
 ;; sometimes we need to write functions to conform to the B semantics.
 
 ;; The B definition of modulo is rather strange. a mod b is only
-;; defined if a isnon-negative number and b is a positive number.
+;; defined if a is a non-negative number and b is a positive number.
 (defn bmod [n m] 
 	(if (or (< n 0) (<= m 0)) nil (rem n m)))
 
