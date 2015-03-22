@@ -59,7 +59,7 @@
 (def AIntegerExpression (with-monad wd-state-m m-result))
 
 ;; Direct set definitions, such as {1,2,3} cannot be simply lifted
-;; because we have to put recursivly turn the contained values into
+;; because we have to recursivly turn the contained values into
 ;; monadic values. 
 (defn ASetExtensionExpression [& x] (with-monad wd-state-m ((m-lift 1 (partial into #{})) (m-seq x))))
 
