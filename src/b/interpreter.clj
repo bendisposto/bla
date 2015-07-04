@@ -7,8 +7,8 @@
 ;; Clojure datastructure, e.g., #EXPRESSION 4+2 will result in the
 ;; datastructure
 ;;      (AAddExpression
-;;      (AIntegerExpression "4")
-;;      (AIntegerExpression "1"))
+;;        (AIntegerExpression "4")
+;;        (AIntegerExpression "1"))
 ;; which can be evaluated. Result of this evaluation is a function
 ;; that takes an environment of variable bindings and produces the
 ;; value of the expression (or truth value of the predicate) together
@@ -24,29 +24,26 @@
 
 ;;# Using the state monad
 ;;We use the maybe-monad-transformer on the state monad. The result is
-;;used in the animator. We cannot use the state moand itself because
+;;used in the animator. We cannot use the state monad itself because
 ;;we need to deal with undefined results (e.g., if we divide by zero.)
 (def wd-state-m (maybe-t state-m))
 
-;; To create monadic versions of regular functions we use m-lift. It
-;; takes a function of the type a_1, a_2, ... --> b and lifts it to a
-;; monadic version of the type m a_1, m a_2 ... --> m b. In the same step,
+;; To create monadic versions of regular functions we use m-lift. In the same step,
 ;; we want to rename them to reflect the names of the syntax tree node
 ;; used in the parser. For example, lifting the integer addition is done 
 ;; by lifting the clojure + function, i.e., 
 ;; (lift AAddExpression + 2)
 ;; we will get 
 ;; (def AAddExpression (with-monad wd-state-m (m-lift 2 +))). 
- ;; Roughly speaking (+ a b) becomes something similar to (fn [env] [(+ (ma e) (mb e)) env]),
+;; Roughly speaking (+ a b) becomes something similar to (fn [env] [(+ (ma e) (mb e)) env]),
 ;; where ma and mb are the monadic versions of a and b. 
 ;; Punning on the name of the syntax tree will allow us to simply evaluate 
 ;; the syntax tree yielding a big function that takes an environment
 ;; as its input and calculates the value producing the required side effects. 
+
 (defmacro lift
   ([name op n] `(def ~name (with-monad wd-state-m (m-lift ~n ~op))))
   ([name op n & more] `(do (lift ~name ~op ~n) (lift ~@more))))
-
-
 
 (declare bmod bdiv bminus bmult powerset notmember bmin bmax brange)
 
@@ -70,7 +67,8 @@
 ;; macro with matching clojure functions, such as +. In some cases, we
 ;; need to write the clojure functions to reflect the B semantics, for
 ;; instance, the * operator has two possible meanings (multiplication
-;; and cartesian product) depening on the type of the arguments. 
+;; and cartesian product) depening on the type of the arguments.
+
 (lift
  AAddExpression                          +                               2
  AModuloExpression                       bmod                            2
@@ -106,8 +104,6 @@
 	([op] `(defmacro ~op [c#] c#))
 	([op & more] `(do (skip ~op) (skip ~@more))))
 
-
-
 ;; Besides a couple of obvious AST nodes that can be skipped there is
 ;; AConvertBooleanExpression which is skipped because we pun on the
 ;; boolean type. In B the predicates are different from boolean
@@ -115,8 +111,8 @@
 ;; them. This would allow us to use 1=1 as an expression 
 ;; without wrapping it in the B bool function, but the parser will
 ;; prevent us from doing so.
-(skip alpha AExpressionParseUnit APredicateParseUnit Start AConvertBoolExpression)
 
+(skip alpha AExpressionParseUnit APredicateParseUnit Start AConvertBoolExpression)
 
 ;;# Rewritings
 ;;In some cases it is easier to rewrite a given AST node in terms of
@@ -135,9 +131,6 @@
 (defmacro ASubsetStrictPredicate [A B] `(AConjunctPredicate (ASubsetPredicate ~A ~B) (ANotEqualPredicate ~A ~B)))
 (defmacro ANotSubsetPredicate [A B] `(ANegationPredicate (ASubsetPredicate ~A ~B)))
 (defmacro ANotSubsetStrictPredicate [A B] `(ANegationPredicate (ASubsetStrictPredicate ~A ~B)))
-
-
-
 
 ;; ## The main functions
 
